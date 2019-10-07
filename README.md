@@ -2,4 +2,4 @@
 
 # Build and Run
 
-    mkdir build && cmake .. && ./demo/comparison
+    mkdir build &&　cd build && cmake .. && ./demo/comparison
