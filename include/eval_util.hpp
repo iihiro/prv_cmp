@@ -50,5 +50,4 @@ inline Ctxt EvalMultMany(const FHEContext& cc, vector<Ctxt>& c_vec) {
   return c_tmp_vec.back();
 }
 
-
 #endif // EVAL_UTIL_HPP

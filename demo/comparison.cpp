@@ -1,14 +1,9 @@
-// TODO
-// PArameter Table
-
 #include "cryptocontexthelper.h"
 #include "utils/debug.h"
 #include "encoding/encodings.h"
 
-
 using namespace std;
 using namespace lbcrypto;
-
 using PolyType = DCRTPoly;
 using Ctxt = Ciphertext<PolyType>;
 using EvkAut = shared_ptr<map<usint, LPEvalKey<PolyType>>>;
@@ -94,8 +89,8 @@ void PreComputeConstatPolys(const FHEContext& cc) {
 void SplitValues (
  const size_t numbit,
  const size_t bit_per_chunk,
- uint64_t& a,
- uint64_t& b, 
+ const uint64_t a,
+ const uint64_t b, 
  size_t& numint,
  vector<uint64_t>& as,
  vector<uint64_t>& bs
@@ -207,10 +202,8 @@ inline void GreaterThanUnroll (
  const size_t num_chunk,
  const vector<Ctxt>& c_gt_res,
  Ctxt& c_res) {
-  //v_c_equ_res_
   vector<Ctxt> v_add(num_chunk);
   size_t itr_cnt = num_chunk - 1;
-  //N0G0
   v_add[0] = cc->EvalMult(c_gt_res[0], v_c_nonequ_res_[0]);
   for (size_t i = 1; i != itr_cnt; ++i) {
     vector<Ctxt> v_single_column(i + 2);
@@ -275,12 +268,10 @@ int main (void) {
 
 	cout << "Timing for Comparison: "<< end - start  << " [ms]" << endl;
 	for (size_t i = 0; i < num_chunk; ++i) {
-	  int64_t dec_constant = DecryptAndGetConstantTerm(context, key_pair, v_c_cmp_res[i]);
-		cout << "Comparison Result on " << i << "-th chunck: "
-         << dec_constant << endl;
+    int64_t dec_constant = DecryptAndGetConstantTerm(context, key_pair, v_c_cmp_res[i]);
+    cout << "Comparison Result on " << i << "-th chunck: " << dec_constant << endl;
 	}
-
-	int64_t dec_constant = DecryptAndGetConstantTerm(context, key_pair, c_cmp_res);
+  int64_t dec_constant = DecryptAndGetConstantTerm(context, key_pair, c_cmp_res);
   cout << "Overall Comparison Result (x<=y)?: " << dec_constant << endl;
   return 0;
 }

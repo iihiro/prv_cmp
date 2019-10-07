@@ -3,10 +3,9 @@
 
 // depth: 1 - 16
 // logN: 10 - 16
-// 16bit for N
 constexpr std::size_t kMaxDepth = 10;
 constexpr std::size_t kMaxLogRingDim = 16;
-constexpr std::size_t kMaxRelWindow = 60;
+constexpr std::size_t kMaxRelWindow = 60; // 0 or 30
 
 constexpr std::size_t GetKey(const std::size_t depth, const std::size_t logN, const std::size_t rel_window) {
   return depth + kMaxDepth * logN + kMaxDepth * kMaxLogRingDim * rel_window;
