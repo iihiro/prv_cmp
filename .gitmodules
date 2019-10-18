@@ -1,0 +1,3 @@
+[submodule "stdsc"]
+	path = stdsc
+	url = git@github.com:iihiro/stdsc.git
