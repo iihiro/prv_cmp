@@ -14,10 +14,10 @@ set(CMAKE_THIRDPARTY_LIB_PALISADE "${CMAKE_PALISADE_DIR}/third-party/lib")
 
 include_directories(${CMAKE_PALISADE_DIR}/src ${CMAKE_PALISADE_DIR}/third-party/include
                     ${CMAKE_PALISADE_DIR}/src/pke/lib ${CMAKE_PALISADE_DIR}/src/core/lib
-                    ${PROJECT_SOURCE_DIR}/prv_cmp ${PROJECT_SOURCE_DIR}/stdsc)
+                    ${PROJECT_SOURCE_DIR}/prvc ${PROJECT_SOURCE_DIR}/stdsc)
 link_directories(${CMAKE_LIB_PALISADE} ${CMAKE_THIRDPARTY_LIB_PALISADE})
 
-set(COMMON_LIBS stdsc prvc_share)
+set(COMMON_LIBS stdsc prvc_share PALISADEpke PALISADEcore ntl)
 
 add_subdirectory(stdsc)
 add_subdirectory(prvc)

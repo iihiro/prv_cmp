@@ -1,6 +1,8 @@
 #ifndef CMP_PARAM_LIST_HPP
 #define CMP_PARAM_LIST_HPP
 
+#include <map>
+
 // depth: 1 - 16
 // logN: 10 - 16
 constexpr std::size_t kMaxDepth = 10;
