@@ -20,6 +20,10 @@
 
 #include <memory>
 
+#define SKM_DATAKIND_CONTEXT prvc_share::SecureKeyFileManager::kDataKindContext
+#define SKM_DATAKIND_PUBKEY  prvc_share::SecureKeyFileManager::kDataKindPubKey
+#define SKM_DATAKIND_SECKEY  prvc_share::SecureKeyFileManager::kDataKindSecKey
+
 namespace prvc_share
 {
 
@@ -33,6 +37,15 @@ class SecureKeyFileManager
     static constexpr std::size_t DefaultDcrtBits  = 60;
     static constexpr std::size_t DefaultRelWindow = 0;
     static constexpr double      DefaultSigma     = 32;
+
+public:
+    enum DataKind_t : uint32_t
+    {
+        kDataKindContext = 0,
+        kDataKindPubKey,
+        kDataKindSecKey,
+        kNumOfDataKind,
+    };
     
 public:
     SecureKeyFileManager(const std::string& contest_filename,
@@ -45,27 +58,16 @@ public:
                     const std::size_t rel_window = DefaultRelWindow,
                     const std::size_t dcrt_bits  = DefaultDcrtBits);
 
-    size_t context_size(void) const;
-    size_t pubkey_size(void) const;
-    size_t seckey_size(void) const;
-    
-    void context_data(void* buffer);
-    void pubkey_data(void* buffer);
-    void seckey_data(void* buffer);
-
-    bool is_exist_context(void) const;
-    bool is_exist_pubkey(void) const;
-    bool is_exist_seckey(void) const;
-
-    std::string context_filename(void) const;
-    std::string pubkey_filename(void) const;
-    std::string seckey_filename(void) const;
+    size_t size(const DataKind_t kind) const;
+    void data(const DataKind_t kind, void* buffer);
+    bool is_exist(const DataKind_t kind) const;
+    std::string filename(const DataKind_t kind) const;
 
 private:
     struct Impl;
     std::shared_ptr<Impl> pimpl_;
 };
-
+    
 } /* namespace prvc_share */
 
 #endif /* PRVC_SECUREKEY_FILEMANAGER */

@@ -20,8 +20,10 @@
 #include <stdsc/stdsc_log.hpp>
 #include <stdsc/stdsc_exception.hpp>
 #include <prvc_share/prvc_securekey_filemanager.hpp>
-#include <prvc_dec/prvc_dec_state.hpp>
-#include <dec/server.hpp>
+#include <prvc_dec/prvc_dec_state_enc.hpp>
+#include <prvc_dec/prvc_dec_state_eval.hpp>
+#include <dec/server_enc.hpp>
+#include <dec/server_eval.hpp>
 
 static constexpr const char* CONTEXT_FILENAME = "context.txt";
 static constexpr const char* PUBKEY_FILENAME  = "pubkey.txt";
@@ -67,26 +69,28 @@ void init(Param& param, int argc, char* argv[])
 
 void exec(const Param& param)
 {
-    prvc_dec::CallbackParam cb_param;
+    STDSC_LOG_INFO("Launched Decryptor demo app");
 
     std::shared_ptr<prvc_share::SecureKeyFileManager> skm_ptr(
         new prvc_share::SecureKeyFileManager(param.context_filename,
                                              param.pubkey_filename,
                                              param.seckey_filename));
+    
+    prvc_dec::CallbackParam cb_param;
     cb_param.set_skm(skm_ptr);
 
-    STDSC_LOG_INFO("Launched Decryptor demo app");
-    stdsc::StateContext state(std::make_shared<prvc_dec::StateInit>());
+    stdsc::StateContext state_enc(std::make_shared<prvc_dec::enc::StateReady>());
+    prvc_demo::ServerEnc server_enc(cb_param, state_enc, DEC_PORT_FOR_ENC,
+                                    param.is_generate_securekey);
+    server_enc.start();
 
-    prvc_demo::Server server_for_enc(cb_param, state, DEC_PORT_FOR_ENC,
-                                     param.is_generate_securekey);
-    //prvc_demo::Server server_for_eval(cb_param, state, PSP_PORT_FOR_EVAL);
-    
-    server_for_enc.start();
-    //server_for_eval.start();
+    stdsc::StateContext state_eval(std::make_shared<prvc_dec::eval::StateReady>());
+    prvc_demo::ServerEval server_eval(cb_param, state_eval, DEC_PORT_FOR_EVAL,
+                                      param.is_generate_securekey);
+    server_eval.start();
 
-    server_for_enc.join();
-    //server_for_eval.join();
+    server_enc.join();
+    server_eval.join();
 }
 
 int main(int argc, char* argv[])

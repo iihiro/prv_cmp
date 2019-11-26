@@ -21,29 +21,31 @@
 #include <stdsc/stdsc_log.hpp>
 #include <stdsc/stdsc_exception.hpp>
 #include <prvc_enc/prvc_enc_dec_client.hpp>
+#include <prvc_enc/prvc_enc_eval_client.hpp>
 #include <share/define.hpp>
 
-static constexpr const char* PUBKEY_FILENAME = "pubkey.txt";
+static constexpr const char* CONTEXT_FILENAME = "context.txt";
+static constexpr const char* PUBKEY_FILENAME  = "pubkey.txt";
 
 struct Option
 {
-    std::string input_filename = "in.txt";
+    prvc_enc::EncryptorKind kind;
 };
 
 void init(Option& option, int argc, char* argv[])
 {
     int opt;
     opterr = 0;
-    while ((opt = getopt(argc, argv, "i:h")) != -1)
+    while ((opt = getopt(argc, argv, "k:h")) != -1)
     {
         switch (opt)
         {
-            case 'i':
-                option.input_filename = optarg;
+            case 'k':
+                option.kind = static_cast<prvc_enc::EncryptorKind>(std::stol(optarg));
                 break;
             case 'h':
             default:
-                printf("Usage: %s [-i input_filename]\n",
+                printf("Usage: %s [-k kind]\n",
                        argv[0]);
                 exit(1);
         }
@@ -55,28 +57,23 @@ void exec(Option& option)
     const char* host = "localhost";
 
     prvc_enc::DecParam dec_param;
-    dec_param.pubkey_filename = PUBKEY_FILENAME;
+    dec_param.context_filename = CONTEXT_FILENAME; 
+    dec_param.pubkey_filename  = PUBKEY_FILENAME;
     prvc_enc::DecClient<> dec_client(host, DEC_PORT_FOR_ENC);
     dec_client.start(dec_param);
-
-    //prvc_enc::PPRSParam pprs_param;
-    //pprs_param.input_filename = option.input_filename;
-    //pprs_param.pubkey_filename = PUBKEY_FILENAME;
-    //prvc_enc::PPRSClient<> pprs_client(host, PPRS_PORT_FOR_USER);
-    //pprs_client.start(pprs_param);
-
     dec_client.wait_for_finish();
-    //pprs_client.wait_for_finish();
 
-    //std::vector<long> results;
-    //dec_client.get_result(results);
-    //
-    //std::cout << "The std::vector of recommendation: ";
-    //for (auto& v : results)
-    //{
-    //    std::cout << v << " ";
-    //}
-    //std::cout << std::endl;
+    prvc_enc::EvalParam eval_param;
+    eval_param.input_value      = (option.kind == prvc_enc::kEncryptorKindX) ? 10 : 6;
+    eval_param.numbit           = 30;
+    eval_param.logN             = 13;
+    eval_param.is_neg           = (option.kind == prvc_enc::kEncryptorKindX) ? false : true;
+    eval_param.context_filename = CONTEXT_FILENAME; 
+    eval_param.pubkey_filename  = PUBKEY_FILENAME;
+    prvc_enc::EvalClient<> eval_client(host, EVAL_PORT_FOR_ENC, option.kind);
+    eval_client.start(eval_param);
+
+    eval_client.wait_for_finish();
 }
 
 int main(int argc, char* argv[])

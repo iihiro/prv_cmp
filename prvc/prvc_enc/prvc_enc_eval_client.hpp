@@ -15,8 +15,8 @@
  * limitations under the License.
  */
 
-#ifndef PRVC_ENC_DEC_CLIENT_HPP
-#define PRVC_ENC_DEC_CLIENT_HPP
+#ifndef PRVC_ENC_EVAL_CLIENT_HPP
+#define PRVC_ENC_EVAL_CLIENT_HPP
 
 #include <memory>
 #include <vector>
@@ -26,19 +26,32 @@
 namespace prvc_enc
 {
 
-class DecParam;
+class EvalParam;
 
 /**
- * @brief Provides client for Decryptor
+ * @brief Enumeration for kind of Encryptor.
  */
-template <class T = DecParam>
-class DecClient : public stdsc::Thread<T>
+enum EncryptorKind : uint32_t
+{
+    kEncryptorKindNil = 0,
+    kEncryptorKindX,
+    kEncryptorKindY,
+    kNumOfEncryptorKind,
+};
+
+    
+/**
+ * @brief Provides client for Evaluator.
+ */
+template <class T = EvalParam>
+class EvalClient : public stdsc::Thread<T>
 {
     using super = stdsc::Thread<T>;
 
 public:
-    DecClient(const char* host, const char* port);
-    virtual ~DecClient(void);
+    EvalClient(const char* host, const char* port,
+               const EncryptorKind kind);
+    virtual ~EvalClient(void);
 
     void start(T& param);
     void wait_for_finish(void);
@@ -51,12 +64,16 @@ private:
     std::shared_ptr<Impl> pimpl_;
 };
 
-struct DecParam
+struct EvalParam
 {
+    uint64_t input_value;
+    size_t numbit;
+    size_t logN;
+    bool is_neg;
     std::string context_filename = "context.txt";
     std::string pubkey_filename  = "pukey.txt";
 };
 
 } /* namespace prvc_enc */
 
-#endif /* PRVC_ENC_DEC_CLIENT_HPP */
+#endif /* PRVC_ENC_EVAL_CLIENT_HPP */

@@ -15,50 +15,38 @@
  * limitations under the License.
  */
 
-#ifndef SERVER_HPP
-#define SERVER_HPP
+#ifndef SERVER_ENC_HPP
+#define SERVER_ENC_HPP
 
 #include <stdsc/stdsc_callback_function_container.hpp>
 #include <stdsc/stdsc_callback_function.hpp>
 #include <stdsc/stdsc_state.hpp>
 #include <prvc_share/prvc_packet.hpp>
-#include <prvc_dec/prvc_dec_callback_function.hpp>
+#include <prvc_dec/prvc_dec_callback_function_enc.hpp>
 #include <prvc_dec/prvc_dec_callback_param.hpp>
-#include <prvc_dec/prvc_dec_thread.hpp>
+#include <prvc_dec/prvc_dec_server.hpp>
 #include <share/define.hpp>
 
 namespace prvc_demo
 {
 
-struct Server
+struct ServerEnc
 {
-    Server(prvc_dec::CallbackParam& param, stdsc::StateContext& state,
-           const char* port = DEC_PORT_FOR_ENC,
-           bool is_generate_securekey = false)
+    ServerEnc(prvc_dec::CallbackParam& param, stdsc::StateContext& state,
+              const char* port = DEC_PORT_FOR_ENC,
+              bool is_generate_securekey = false)
     {
         stdsc::CallbackFunctionContainer callback;
 
-        std::shared_ptr<stdsc::CallbackFunction> cb_conn(
-          new prvc_dec::CallbackFunctionRequestConnect(param));
-        callback.set(prvc_share::kControlCodeRequestConnect, cb_conn);
-
-        std::shared_ptr<stdsc::CallbackFunction> cb_disconn(
-          new prvc_dec::CallbackFunctionRequestDisconnect(param));
-        callback.set(prvc_share::kControlCodeRequestDisconnect, cb_disconn);
-
         std::shared_ptr<stdsc::CallbackFunction> cb_pubkey(
-          new prvc_dec::CallbackFunctionPubkeyRequest(param));
+            new prvc_dec::enc::CallbackFunctionPubkeyRequest(param));
         callback.set(prvc_share::kControlCodeDownloadPubkey, cb_pubkey);
 
-        std::shared_ptr<stdsc::CallbackFunction> cb_result(
-          new prvc_dec::CallbackFunctionEncResult(param));
-        callback.set(prvc_share::kControlCodeDataEncResult, cb_result);
-
-        dec_ = std::make_shared<prvc_dec::DecThread>(
+        dec_ = std::make_shared<prvc_dec::DecServer>(
           port, callback, state, param.get_skm(), is_generate_securekey);
     }
 
-    ~Server(void) = default;
+    ~ServerEnc(void) = default;
 
     void start(void)
     {
@@ -71,9 +59,9 @@ struct Server
     }
 
 private:
-    std::shared_ptr<prvc_dec::DecThread> dec_;
+    std::shared_ptr<prvc_dec::DecServer> dec_;
 };
 
 } /* namespace prvc_demo */
 
-#endif /* SERVER_HPP */
+#endif /* SERVER_ENC_HPP */

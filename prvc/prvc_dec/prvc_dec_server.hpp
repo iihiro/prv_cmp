@@ -15,34 +15,46 @@
  * limitations under the License.
  */
 
-#ifndef PRVC_PACKET_HPP
-#define PRVC_PACKET_HPP
+#ifndef PRVC_DEC_SERVER_HPP
+#define PRVC_DEC_SERVER_HPP
 
-#include <cstdint>
+#include <memory>
+#include <string>
+
+namespace stdsc
+{
+class CallbackFunctionContainer;
+class StateContext;
+}
 
 namespace prvc_share
 {
+class SecureKeyFileManager;
+}
+
+namespace prvc_dec
+{
 
 /**
- * @brief Enumeration for control code of packet.
+ * @brief Provides Decryptor server.
  */
-enum ControlCode_t : uint64_t
+class DecServer
 {
-    /* Code for Request packet: 0x201-0x2FF */
-    //kControlCodeRequestConnect = 0x201,
-    //kControlCodeRequestDisconnect = 0x201,
+public:
+    DecServer(const char* port, stdsc::CallbackFunctionContainer& callback,
+              stdsc::StateContext& state,
+              prvc_share::SecureKeyFileManager& skm,
+              bool is_generate_securekey = false);
+    ~DecServer(void) = default;
 
-    /* Code for Data packet: 0x401-0x4FF */
-    kControlCodeDataPubkey = 0x401,
-    kControlCodeDataEVK = 0x402,
-    kControlCodeDataEncInputX = 0x403,
-    kControlCodeDataEncInputY = 0x404,
-    kControlCodeDataEncResult = 0x405,
-    /* Code for Download packet: 0x801-0x8FF */
-    kControlCodeDownloadPubkey = 0x801,
-    kControlCodeDownloadEVK = 0x802,
+    void start();
+    void join(void);
+
+private:
+    struct Impl;
+    std::shared_ptr<Impl> pimpl_;
 };
 
-} /* namespace prvc_share */
+} /* namespace prvc_dec */
 
-#endif /* PRVC_PACKET_HPP */
+#endif /* PRVC_DEC_SERVER_HPP */

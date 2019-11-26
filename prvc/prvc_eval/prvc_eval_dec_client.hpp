@@ -6,7 +6,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE‐2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,46 +15,40 @@
  * limitations under the License.
  */
 
-#ifndef PRVC_DEC_THEAD_HPP
-#define PRVC_DEC_THEAD_HPP
+#ifndef PRVC_EVAL_DEC_CLIENT_HPP
+#define PRVC_EVAL_DEC_CLIENT_HPP
 
 #include <memory>
-#include <string>
 
 namespace stdsc
 {
-class CallbackFunctionContainer;
 class StateContext;
+class Buffer;
 }
 
-namespace prvc_share
-{
-class SecureKeyFileManager;
-}
-
-namespace prvc_dec
+namespace prvc_eval
 {
 
 /**
- * @brief Provides Decryptor server.
+ * @brief Provides client for Decryptor.
  */
-class DecThread
+class DecClient
 {
-public:
-    DecThread(const char* port, stdsc::CallbackFunctionContainer& callback,
-              stdsc::StateContext& state,
-              prvc_share::SecureKeyFileManager& skm,
-              bool is_generate_securekey = false);
-    ~DecThread(void) = default;
+    //friend class CallbackFunctionComputeRequest;
 
-    void start(void);
-    void join(void);
+public:
+    DecClient(const char* host, const char* port, stdsc::StateContext& state);
+    virtual ~DecClient(void) = default;
+
+    void download_evk(const std::string& out_filename="context.txt");
 
 private:
+    void upload_enc_result(const stdsc::Buffer& buffer);
+
     struct Impl;
     std::shared_ptr<Impl> pimpl_;
 };
 
-} /* namespace prvc_dec */
+} /* namespace prvc_eval */
 
-#endif /* PRVC_DEC_THEAD_HPP */
+#endif /*PRVC_EVAL_DEC_CLIENT_HPP*/

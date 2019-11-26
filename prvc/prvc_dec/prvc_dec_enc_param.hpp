@@ -15,34 +15,27 @@
  * limitations under the License.
  */
 
-#ifndef PRVC_PACKET_HPP
-#define PRVC_PACKET_HPP
+#ifndef PRVC_DEC_ENC_PARAM_HPP
+#define PRVC_DEC_ENC_PARAM_HPP
 
 #include <cstdint>
 
-namespace prvc_share
+namespace prvc_dec
+{
+namespace enc
 {
 
 /**
- * @brief Enumeration for control code of packet.
+ * @brief This class is used to hold the parameter for encryptor.
+ * The structure size is fixed 16 byte.
  */
-enum ControlCode_t : uint64_t
+struct Param
 {
-    /* Code for Request packet: 0x201-0x2FF */
-    //kControlCodeRequestConnect = 0x201,
-    //kControlCodeRequestDisconnect = 0x201,
-
-    /* Code for Data packet: 0x401-0x4FF */
-    kControlCodeDataPubkey = 0x401,
-    kControlCodeDataEVK = 0x402,
-    kControlCodeDataEncInputX = 0x403,
-    kControlCodeDataEncInputY = 0x404,
-    kControlCodeDataEncResult = 0x405,
-    /* Code for Download packet: 0x801-0x8FF */
-    kControlCodeDownloadPubkey = 0x801,
-    kControlCodeDownloadEVK = 0x802,
+    uint64_t ctx_size;
+    uint64_t key_size;
 };
 
-} /* namespace prvc_share */
+} /* namespace enc */
+} /* namespace prvc_dec */
 
-#endif /* PRVC_PACKET_HPP */
+#endif /* PRVC_DEC_ENC_PARAM_HPP */

@@ -6,7 +6,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE‐2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,12 +15,39 @@
  * limitations under the License.
  */
 
-#ifndef PRVC_DEFINE_HPP
-#define PRVC_DEFINE_HPP
+#ifndef PRVC_EVAL_THEAD_HPP
+#define PRVC_EVAL_THEAD_HPP
 
-#define PRVC_TIMEOUT_SEC (60)
-#define PRVC_RETRY_INTERVAL_USEC (2000000)
+#include <memory>
+#include <string>
 
-#define PRVC_MAX_SPLIT_NUM (1024)
+namespace stdsc
+{
+class CallbackFunctionContainer;
+class StateContext;
+}
 
-#endif /* PRVC_DEFINE_HPP */
+namespace prvc_eval
+{
+
+/**
+ * @brief Provides Evalulator server.
+ */
+class EvalThread
+{
+public:
+    EvalThread(const char* port, stdsc::CallbackFunctionContainer& callback,
+               stdsc::StateContext& state);
+    ~EvalThread(void) = default;
+
+    void start(void);
+    void join(void);
+
+private:
+    struct Impl;
+    std::shared_ptr<Impl> pimpl_;
+};
+
+} /* namespace prvc_eval */
+
+#endif /* PRVC_EVAL_THEAD_HPP */

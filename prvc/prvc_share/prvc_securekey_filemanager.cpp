@@ -17,24 +17,20 @@
 
 #include <sstream>
 #include <memory>
-//#include <iostream>
-//#include <fstream>
 #include <stdsc/stdsc_log.hpp>
 #include <stdsc/stdsc_exception.hpp>
 #include <prvc_share/prvc_utility.hpp>
 #include <prvc_share/prvc_securekey_filemanager.hpp>
 #include <prvc_share/prvc_cmp_param_list.hpp>
+#include <prvc_share/prvc_enctype.hpp>
 
-//#include "FHE.h"
-//#include "EncryptedArray.h"
-
-#include "cryptocontexthelper.h"
-#include "utils/debug.h"
-#include "encoding/encodings.h"
-#include "utils/serializablehelper.h"
-
-using PolyType = lbcrypto::DCRTPoly;
-using EvkAut   = shared_ptr<map<usint, lbcrypto::LPEvalKey<PolyType>>>;
+#define CHECK_KIND(k) do {                                               \
+        if (!((k) < kNumOfDataKind)) {                                   \
+            std::ostringstream oss;                                      \
+            oss << "Err: Invalid securekey kind. (kind: " << (k) << ")"; \
+            STDSC_THROW_INVPARAM(oss.str().c_str());                     \
+        }                                                                \
+    } while(0)
 
 namespace prvc_share
 {
@@ -56,7 +52,6 @@ struct SecureKeyFileManager::Impl
                     const std::size_t rel_window,
                     const std::size_t dcrt_bits)
     {
-#if 1
         double root_hermit = 0.0;
         GetRootHermit(mul_depth, logN, rel_window, dcrt_bits, root_hermit);
 
@@ -64,7 +59,7 @@ struct SecureKeyFileManager::Impl
         lbcrypto::PlaintextModulus ptm = (1 << logN) - 1;
         double sigma = DefaultSigma;
         
-        lbcrypto::CryptoContext<PolyType> cc;
+        FHEContext cc;
         cc = lbcrypto::CryptoContextFactory<PolyType>::genCryptoContextBFVrns(
             ptm, root_hermit, sigma, 0, mul_depth, 0, OPTIMIZED, 2, rel_window, dcrt_bits);
         cc->Enable(ENCRYPTION);
@@ -126,72 +121,25 @@ struct SecureKeyFileManager::Impl
 			std::cerr << "Error serializing private key" << std::endl;
 			return;
 		}
-#else
-        FHEcontext context(m_, p_, r_);
-        buildModChain(context, L_, c_);
-
-        STDSC_LOG_INFO("Generating secure keys.");
-
-        NTL::ZZX G = context.alMod.getFactorsOverZZ()[0];
-
-        FHESecKey secretKey(context);
-        const FHEPubKey& publicKey = secretKey;
-
-        secretKey.GenSecKey(w_);
-        addSome1DMatrices(secretKey);
-
-        EncryptedArray ea(context, G);
-
-        if (context.zMStar.numOfGens() != 1) {
-            STDSC_THROW_FAILURE("noise increase when it rotates\n");
-        }
-
-        for (int i = 0; i < (int)context.zMStar.numOfGens(); i++)
-        {
-            if (!context.zMStar.SameOrd(i)) {
-                STDSC_THROW_FAILURE("noise increase when it rotates\n");
-            }
-        }
-
-        std::fstream publicFile(pubkey_filename_,
-                                std::fstream::out | std::fstream::trunc);
-        writeContextBase(publicFile, context);
-        publicFile << context << std::std::endl;
-        publicFile << publicKey << std::std::endl;
-        publicFile.close();
-
-        std::fstream secretFile(seckey_filename_,
-                                std::fstream::out | std::fstream::trunc);
-        writeContextBase(secretFile, context);
-        secretFile << context << std::std::endl;
-        secretFile << secretKey << std::std::endl;
-        secretFile.close();
-#endif
-    }
-
-    size_t context_size(void) const
-    {
-        return prvc_share::utility::file_size(context_filename_);
     }
     
-    size_t pubkey_size(void) const
+    size_t size(const DataKind_t kind) const
     {
-        return prvc_share::utility::file_size(pubkey_filename_);
+        CHECK_KIND(kind);
+        return prvc_share::utility::file_size(this->filename(kind));
     }
     
-    size_t seckey_size(void) const
+    void data(const DataKind_t kind, void* buffer)
     {
-        return prvc_share::utility::file_size(seckey_filename_);
-    }
-
-    void context_data(void* buffer)
-    {
-        size_t size = context_size();
-        std::ifstream ifs(context_filename_, std::ios::binary);
+        CHECK_KIND(kind);
+        auto filename = this->filename(kind);
+        
+        size_t size = this->size(kind);
+        std::ifstream ifs(filename, std::ios::binary);
         if (!ifs.is_open())
         {
             std::ostringstream oss;
-            oss << "failed to open. (" << context_filename_ << ")";
+            oss << "failed to open. (" << filename << ")";
             STDSC_THROW_FILE(oss.str());
         }
         else
@@ -200,71 +148,21 @@ struct SecureKeyFileManager::Impl
         }
     }
     
-    void pubkey_data(void* buffer)
+    bool is_exist(const DataKind_t kind) const
     {
-        size_t size = pubkey_size();
-        std::ifstream ifs(pubkey_filename_, std::ios::binary);
-        if (!ifs.is_open())
-        {
-            std::ostringstream oss;
-            oss << "failed to open. (" << pubkey_filename_ << ")";
-            STDSC_THROW_FILE(oss.str());
-        }
-        else
-        {
-            ifs.read(reinterpret_cast<char*>(buffer), size);
-        }
-    }
-
-    void seckey_data(void* buffer)
-    {
-        size_t size = seckey_size();
-        std::ifstream ifs(seckey_filename_, std::ios::binary);
-        if (!ifs.is_open())
-        {
-            std::ostringstream oss;
-            oss << "failed to open. (" << seckey_filename_ << ")";
-            STDSC_THROW_FILE(oss.str());
-        }
-        else
-        {
-            ifs.read(reinterpret_cast<char*>(buffer), size);
-        }
-    }
-
-    bool is_exist_context(void) const
-    {
-        std::ifstream ifs(context_filename_);
+        CHECK_KIND(kind);
+        std::ifstream ifs(this->filename(kind));
         return ifs.is_open();
     }
     
-    bool is_exist_pubkey(void) const
+    std::string filename(const DataKind_t kind) const
     {
-        std::ifstream ifs(pubkey_filename_);
-        return ifs.is_open();
-    }
-
-    bool is_exist_seckey(void) const
-    {
-        std::ifstream ifs(seckey_filename_);
-        return ifs.is_open();
-    }
-
-    std::string context_filename(void) const
-    {
-        return context_filename_;
+        CHECK_KIND(kind);
+        return (kind == kDataKindContext) ?     \
+                        context_filename_ :     \
+                        ((kind == kDataKindPubKey) ? pubkey_filename_ : seckey_filename_);
     }
     
-    std::string pubkey_filename(void) const
-    {
-        return pubkey_filename_;
-    }
-
-    std::string seckey_filename(void) const
-    {
-        return seckey_filename_;
-    }
-
 private:
     std::string context_filename_;
     std::string pubkey_filename_;
@@ -286,64 +184,24 @@ void SecureKeyFileManager::initialize(const std::size_t mul_depth,
     pimpl_->initialize(mul_depth, logN, rel_window, dcrt_bits);
 }
 
-size_t SecureKeyFileManager::context_size(void) const
+size_t SecureKeyFileManager::size(const DataKind_t kind) const
 {
-    return pimpl_->context_size();
+    return pimpl_->size(kind);
 }
 
-size_t SecureKeyFileManager::pubkey_size(void) const
+void SecureKeyFileManager::data(const DataKind_t kind, void* buffer)
 {
-    return pimpl_->pubkey_size();
+    pimpl_->data(kind, buffer);
 }
 
-size_t SecureKeyFileManager::seckey_size(void) const
+bool SecureKeyFileManager::is_exist(const DataKind_t kind) const
 {
-    return pimpl_->seckey_size();
+    return pimpl_->is_exist(kind);
 }
 
-void SecureKeyFileManager::context_data(void* buffer)
+std::string SecureKeyFileManager::filename(const DataKind_t kind) const
 {
-    pimpl_->context_data(buffer);
-}
-
-void SecureKeyFileManager::pubkey_data(void* buffer)
-{
-    pimpl_->pubkey_data(buffer);
-}
-
-void SecureKeyFileManager::seckey_data(void* buffer)
-{
-    pimpl_->seckey_data(buffer);
-}
-
-bool SecureKeyFileManager::is_exist_context(void) const
-{
-    return pimpl_->is_exist_context();
-}
-
-bool SecureKeyFileManager::is_exist_pubkey(void) const
-{
-    return pimpl_->is_exist_pubkey();
-}
-
-bool SecureKeyFileManager::is_exist_seckey(void) const
-{
-    return pimpl_->is_exist_seckey();
-}
-
-std::string SecureKeyFileManager::context_filename(void) const
-{
-    return pimpl_->context_filename();
-}
-
-std::string SecureKeyFileManager::pubkey_filename(void) const
-{
-    return pimpl_->pubkey_filename();
-}
-
-std::string SecureKeyFileManager::seckey_filename(void) const
-{
-    return pimpl_->seckey_filename();
+    return pimpl_->filename(kind);
 }
 
 } /* namespace prvc_share */

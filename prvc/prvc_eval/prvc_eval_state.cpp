@@ -18,35 +18,25 @@
 #include <mutex>
 #include <stdsc/stdsc_state.hpp>
 #include <stdsc/stdsc_log.hpp>
-#include <prvc_dec/prvc_dec_state.hpp>
+#include <prvc_eval/prvc_eval_state.hpp>
 
-namespace prvc_dec
+namespace prvc_eval
 {
-
-/* Encryptor x2, Evaluator */
-static constexpr std::size_t MAX_CLIENT_NUM = 3;
 
 struct StateInit::Impl
 {
-    Impl(size_t initial_connection_count) : count_(initial_connection_count)
+    Impl()
     {
     }
 
     void set(stdsc::StateContext& sc, uint64_t event)
     {
         std::lock_guard<std::mutex> lock(mutex_);
-        STDSC_LOG_TRACE("StateInit: event#%lu, conn_count:%ld", event, count_);
+        STDSC_LOG_TRACE("StateInit: event#%lu", event);
         switch (static_cast<Event_t>(event))
         {
-            case kEventConnectSocket:
-                //if (++count_ >= MAX_CLIENT_NUM)
-                if (++count_ >= 1) // for test
-                {
-                    sc.next_state(StateConnected::create());
-                }
-                break;
-            case kEventDisconnectSocket:
-                --count_;
+            case kEventSendEVKRequest:
+                sc.next_state(StateReady::create());
                 break;
             default:
                 break;
@@ -54,34 +44,41 @@ struct StateInit::Impl
     }
 
 private:
-    std::size_t count_;
     std::mutex mutex_;
 };
-
-struct StateConnected::Impl
+    
+struct StateReady::Impl
 {
-    Impl(void)
+    Impl(bool is_received_enc_x, bool is_received_enc_y)
+        : is_received_enc_x_(is_received_enc_x),
+          is_received_enc_y_(is_received_enc_y)
     {
     }
 
     void set(stdsc::StateContext& sc, uint64_t event)
     {
         std::lock_guard<std::mutex> lock(mutex_);
-        STDSC_LOG_TRACE("StateConnected: event#%lu", event);
+        STDSC_LOG_TRACE("StateReady: event#%lu", event);
         switch (static_cast<Event_t>(event))
         {
-            case kEventReceivedEncResult:
-                sc.next_state(StateComputed::create());
+            case kEventReceivedEncInputX:
+                is_received_enc_x_ = true;
                 break;
-            case kEventDisconnectSocket:
-                sc.next_state(StateInit::create(MAX_CLIENT_NUM - 1));
+            case kEventReceivedEncInputY:
+                is_received_enc_y_ = true;
                 break;
             default:
                 break;
         }
+
+        if (is_received_enc_x_ && is_received_enc_y_) {
+            sc.next_state(StateComputed::create());
+        }
     }
 
 private:
+    bool is_received_enc_x_;
+    bool is_received_enc_y_;
     std::mutex mutex_;
 };
 
@@ -97,8 +94,10 @@ struct StateComputed::Impl
         STDSC_LOG_TRACE("StateComputed(%lu): event#%lu", event);
         switch (static_cast<Event_t>(event))
         {
-            case kEventDisconnectSocket:
-                sc.next_state(StateInit::create(MAX_CLIENT_NUM - 1));
+            case kEventSendEVKRequest:
+            case kEventReceivedEncInputX:
+            case kEventReceivedEncInputY:
+                sc.next_state(StateReady::create(true, true));
                 break;
             default:
                 break;
@@ -107,33 +106,17 @@ struct StateComputed::Impl
 
 private:
     std::mutex mutex_;
-};
-
-struct StateExit::Impl
-{
-    Impl(void)
-    {
-    }
-
-    void set(stdsc::StateContext& sc, uint64_t event)
-    {
-    }
-
-private:
-    std::mutex mutex_;
-};
+};    
 
 // Init
-
-std::shared_ptr<stdsc::State> StateInit::create(size_t initial_connection_count)
+std::shared_ptr<stdsc::State> StateInit::create()
 {
-    auto s = 
-      std::shared_ptr<stdsc::State>(new StateInit(initial_connection_count));
+    auto s = std::shared_ptr<stdsc::State>(new StateInit());
     return s;
 }
 
-StateInit::StateInit(size_t initial_connection_count)
-  : pimpl_(new Impl(initial_connection_count))
+StateInit::StateInit()
+    : pimpl_(new Impl())
 {
 }
 
@@ -141,26 +124,27 @@ void StateInit::set(stdsc::StateContext& sc, uint64_t event)
 {
     pimpl_->set(sc, event);
 }
-
-// Connected
-
-    std::shared_ptr<stdsc::State> StateConnected::create(void)
+    
+// Ready
+std::shared_ptr<stdsc::State> StateReady::create(
+    bool is_received_enc_x, bool is_received_enc_y)
 {
-    auto s = std::shared_ptr<stdsc::State>(new StateConnected());
+    auto s = std::shared_ptr<stdsc::State>(
+        new StateReady(is_received_enc_x, is_received_enc_y));
     return s;
 }
 
-StateConnected::StateConnected(void) : pimpl_(new Impl())
+StateReady::StateReady(bool is_received_enc_x, bool is_received_enc_y)
+  : pimpl_(new Impl(is_received_enc_x, is_received_enc_y))
 {
 }
 
-void StateConnected::set(stdsc::StateContext& sc, uint64_t event)
+void StateReady::set(stdsc::StateContext& sc, uint64_t event)
 {
     pimpl_->set(sc, event);
 }
 
 // Computed
-
 std::shared_ptr<stdsc::State> StateComputed::create()
 {
     auto s = std::shared_ptr<stdsc::State>(new StateComputed());
@@ -175,22 +159,5 @@ void StateComputed::set(stdsc::StateContext& sc, uint64_t event)
 {
     pimpl_->set(sc, event);
 }
-
-// Exit
-
-std::shared_ptr<stdsc::State> StateExit::create()
-{
-    auto s = std::shared_ptr<stdsc::State>(new StateExit());
-    return s;
-}
-
-StateExit::StateExit(void) : pimpl_(new Impl())
-{
-}
-
-void StateExit::set(stdsc::StateContext& sc, uint64_t event)
-{
-    pimpl_->set(sc, event);
-}
-
-} /* prvc_dec */
+    
+} /* prvc_eval */

@@ -21,20 +21,19 @@
 #include <stdsc/stdsc_exception.hpp>
 #include <prvc_share/prvc_utility.hpp>
 #include <prvc_share/prvc_securekey_filemanager.hpp>
-#include <prvc_dec/prvc_dec_thread.hpp>
-#include <prvc_dec/prvc_dec_state.hpp>
+#include <prvc_dec/prvc_dec_server.hpp>
+//#include <prvc_dec/prvc_dec_state.hpp>
 
 namespace prvc_dec
 {
 
-struct DecThread::Impl
+struct DecServer::Impl
 {
     Impl(const char* port, stdsc::CallbackFunctionContainer& callback,
          stdsc::StateContext& state, prvc_share::SecureKeyFileManager& skm,
          bool is_generate_securekey = false)
-      : server_(new stdsc::Server<>(port, state)), state_(state), skm_(skm)
+        : server_(new stdsc::Server<>(port, state, callback)), state_(state), skm_(skm)
     {
-        server_->set_callback(callback);
         STDSC_LOG_INFO("Lanched Dec server (%s)", port);
 
         if (is_generate_securekey) {
@@ -46,27 +45,28 @@ struct DecThread::Impl
 
     void start(void)
     {
-        if (!skm_.is_exist_pubkey())
+        if (!skm_.is_exist(SKM_DATAKIND_PUBKEY))
         {
             std::ostringstream oss;
-            oss << "Err: public key file was not found. (" << skm_.pubkey_filename()
+            oss << "Err: public key file was not found. (" << skm_.filename(SKM_DATAKIND_PUBKEY)
                 << ")" << std::endl;
             STDSC_THROW_FILE(oss.str());
         }
-        if (!skm_.is_exist_seckey())
+        if (!skm_.is_exist(SKM_DATAKIND_SECKEY))
         {
             std::ostringstream oss;
-            oss << "Err: security key file was not found. (" << skm_.seckey_filename()
+            oss << "Err: security key file was not found. (" << skm_.filename(SKM_DATAKIND_SECKEY)
                 << ")" << std::endl;
             STDSC_THROW_FILE(oss.str());
         }
 
-        server_->start();
+        bool async = true;
+        server_->start(async);
     }
 
     void join(void)
     {
-        server_->wait_for_finish();
+        server_->wait();
     }
 
 private:
@@ -75,7 +75,7 @@ private:
     prvc_share::SecureKeyFileManager& skm_;
 };
 
-DecThread::DecThread(const char* port,
+DecServer::DecServer(const char* port,
                      stdsc::CallbackFunctionContainer& callback,
                      stdsc::StateContext& state,
                      prvc_share::SecureKeyFileManager& skm,
@@ -84,12 +84,12 @@ DecThread::DecThread(const char* port,
 {
 }
 
-void DecThread::start(void)
+void DecServer::start(void)
 {
     pimpl_->start();
 }
 
-void DecThread::join(void)
+void DecServer::join(void)
 {
     pimpl_->join();
 }
