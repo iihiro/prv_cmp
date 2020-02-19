@@ -15,41 +15,30 @@
  * limitations under the License.
  */
 
-#ifndef PRVC_DEC_CALLBACK_FUNCTION_EVAL_HPP
-#define PRVC_DEC_CALLBACK_FUNCTION_EVAL_HPP
+#ifndef PRVC_DEC_CALLBACK_FUNCTION_HPP
+#define PRVC_DEC_CALLBACK_FUNCTION_HPP
 
 #include <stdsc/stdsc_callback_function.hpp>
 
 namespace prvc_dec
 {
 struct CallbackParam;
-
-namespace eval
-{
-
+    
 /**
  * @brief Provides callback function in receiving pubic key request.
  */
-class CallbackFunctionEVKRequest : public stdsc::CallbackFunction
-{
-public:
-    CallbackFunctionEVKRequest(CallbackParam& param) : param_(param)
-    {
-    }
+DECLARE_DOWNLOAD_CLASS(CallbackFunctionPubkeyRequest);
 
-protected:
-    virtual void request_function(uint64_t code,
-                                  stdsc::StateContext& state) override;
-    virtual void data_function(uint64_t code, const stdsc::Buffer& buffer,
-                               stdsc::StateContext& state) override;
-    virtual void download_function(uint64_t code, const stdsc::Socket& sock,
-                                   stdsc::StateContext& state) override;
+/**
+ * @brief Provides callback function in receiving evk request.
+ */
+DECLARE_DOWNLOAD_CLASS(CallbackFunctionEVKRequest);
 
-private:
-    prvc_dec::CallbackParam& param_;
-};
+/**
+ * @brief Provides callback function in receiving decrypt request.
+ */
+DECLARE_DATA_CLASS(CallbackFunctionDecryptRequest);
 
-} /* namespace eval */
 } /* namespace prvc_dec */
 
-#endif /* PRVC_DEC_CALLBACK_FUNCTION_EVAL_HPP */
+#endif /* PRVC_DEC_CALLBACK_FUNCTION_HPP */

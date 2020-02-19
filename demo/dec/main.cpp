@@ -20,10 +20,8 @@
 #include <stdsc/stdsc_log.hpp>
 #include <stdsc/stdsc_exception.hpp>
 #include <prvc_share/prvc_securekey_filemanager.hpp>
-#include <prvc_dec/prvc_dec_state_enc.hpp>
-#include <prvc_dec/prvc_dec_state_eval.hpp>
-#include <dec/server_enc.hpp>
-#include <dec/server_eval.hpp>
+#include <prvc_dec/prvc_dec_state.hpp>
+#include <prvc_dec/prvc_dec_callback_param.hpp>
 
 static constexpr const char* CONTEXT_FILENAME = "context.txt";
 static constexpr const char* PUBKEY_FILENAME  = "pubkey.txt";
@@ -31,9 +29,9 @@ static constexpr const char* SECKEY_FILENAME  = "seckey.txt";
 
 struct Param
 {
-    std::string context_filename = CONTEXT_FILENAME;
     std::string pubkey_filename  = PUBKEY_FILENAME;
     std::string seckey_filename  = SECKEY_FILENAME;
+    std::string context_filename = CONTEXT_FILENAME;
     bool is_generate_securekey   = false;
 };
 
@@ -45,14 +43,14 @@ void init(Param& param, int argc, char* argv[])
     {
         switch (opt)
         {
-            case 'c':
-                param.context_filename = optarg;
-                break;
             case 'p':
                 param.pubkey_filename = optarg;
                 break;
             case 's':
                 param.seckey_filename = optarg;
+                break;
+            case 'c':
+                param.context_filename = optarg;
                 break;
             case 'g':
                 param.is_generate_securekey = true;
@@ -60,7 +58,7 @@ void init(Param& param, int argc, char* argv[])
             case 'h':
             default:
                 printf(
-                  "Usage: %s [-c context_filename] [-p pubkey_filename] [-s seckey_filename] [-g]\n",
+                  "Usage: %s [-p pubkey_filename] [-s seckey_filename] [-c context_filename] [-g]\n",
                   argv[0]);
                 exit(1);
         }
@@ -75,22 +73,31 @@ void exec(const Param& param)
         new prvc_share::SecureKeyFileManager(param.context_filename,
                                              param.pubkey_filename,
                                              param.seckey_filename));
-    
+
+    if (param.is_generate_securekey) {
+        skm_ptr->initialize();
+    }
+
     prvc_dec::CallbackParam cb_param;
-    cb_param.set_skm(skm_ptr);
+    cb_param.skm_ptr = skm_ptr;
+    //cb_param.context_ptr = std::make_shared<prvc_share::Context>();
 
-    stdsc::StateContext state_enc(std::make_shared<prvc_dec::enc::StateReady>());
-    prvc_demo::ServerEnc server_enc(cb_param, state_enc, DEC_PORT_FOR_ENC,
-                                    param.is_generate_securekey);
-    server_enc.start();
 
-    stdsc::StateContext state_eval(std::make_shared<prvc_dec::eval::StateReady>());
-    prvc_demo::ServerEval server_eval(cb_param, state_eval, DEC_PORT_FOR_EVAL,
-                                      param.is_generate_securekey);
-    server_eval.start();
-
-    server_enc.join();
-    server_eval.join();
+//
+//    
+//
+//    stdsc::StateContext state_enc(std::make_shared<prvc_dec::enc::StateReady>());
+//    prvc_demo::ServerEnc server_enc(cb_param, state_enc, DEC_PORT_FOR_ENC,
+//                                    param.is_generate_securekey);
+//    server_enc.start();
+//
+//    stdsc::StateContext state_eval(std::make_shared<prvc_dec::eval::StateReady>());
+//    prvc_demo::ServerEval server_eval(cb_param, state_eval, DEC_PORT_FOR_EVAL,
+//                                      param.is_generate_securekey);
+//    server_eval.start();
+//
+//    server_enc.join();
+//    server_eval.join();
 }
 
 int main(int argc, char* argv[])

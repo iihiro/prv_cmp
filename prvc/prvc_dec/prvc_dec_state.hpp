@@ -15,8 +15,8 @@
  * limitations under the License.
  */
 
-#ifndef PRVC_DEC_STATE_EVAL_HPP
-#define PRVC_DEC_STATE_EVAL_HPP
+#ifndef PRVC_DEC_STATE_HPP
+#define PRVC_DEC_STATE_HPP
 
 #include <cstdbool>
 
@@ -25,17 +25,15 @@
 
 namespace prvc_dec
 {
-namespace eval
-{
 
 /**
  * @brief Enumeration for state of Decryptor.
  */
 enum StateId_t : uint64_t
 {
-    kStateNil = 0,
-    kStateReady,
-    kStateExit,
+    kStateNil   = 0,
+    kStateReady = 1,
+    kStateExit  = 2,
 };
 
 /**
@@ -43,10 +41,10 @@ enum StateId_t : uint64_t
  */
 enum Event_t : uint64_t
 {
-    kEventConnectSocket = 0,
-    kEventDisconnectSocket,
-    kEventReceivedEVKReq,
-    kEventReceivedEncResult,
+    kEventNil            = 0,
+    kEventPubkeyReqest   = 1,
+    kEventEVKRequest     = 2,
+    kEventDecryptRequest = 3,
 };
 
 /**
@@ -54,20 +52,16 @@ enum Event_t : uint64_t
  */
 struct StateReady : public stdsc::State
 {
-    static std::shared_ptr<State> create();
-    StateReady();
+    static std::shared_ptr<State> create(void);
+    StateReady(void);
     virtual void set(stdsc::StateContext &sc, uint64_t event) override;
-    virtual uint64_t id(void) const override
-    {
-        return kStateReady;
-    }
+    STDSC_STATE_DEFID(kStateReady);
 
 private:
     struct Impl;
     std::shared_ptr<Impl> pimpl_;
 };
 
-} /* eval */
 } /* prvc_dec */
 
-#endif /* PRVC_DEC_STATE_EVAL_HPP */
+#endif /* PRVC_DEC_STATE_HPP */

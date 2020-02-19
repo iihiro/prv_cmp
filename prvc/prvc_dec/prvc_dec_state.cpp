@@ -18,16 +18,14 @@
 #include <mutex>
 #include <stdsc/stdsc_state.hpp>
 #include <stdsc/stdsc_log.hpp>
-#include <prvc_dec/prvc_dec_state_eval.hpp>
+#include <prvc_dec/prvc_dec_state.hpp>
 
 namespace prvc_dec
-{
-namespace eval
 {
 
 struct StateReady::Impl
 {
-    Impl()
+    Impl(void)
     {
     }
 
@@ -42,10 +40,11 @@ struct StateReady::Impl
     }
 };
 
-std::shared_ptr<stdsc::State> StateReady::create()
+// Ready
+    
+std::shared_ptr<stdsc::State> StateReady::create(void)
 {
-    auto s = std::shared_ptr<stdsc::State>(new StateReady());
-    return s;
+    return std::shared_ptr<stdsc::State>(new StateReady());
 }
 
 StateReady::StateReady()
@@ -58,5 +57,4 @@ void StateReady::set(stdsc::StateContext& sc, uint64_t event)
     pimpl_->set(sc, event);
 }
 
-} /* eval */
 } /* prvc_dec */

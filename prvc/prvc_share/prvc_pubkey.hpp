@@ -15,26 +15,39 @@
  * limitations under the License.
  */
 
-#ifndef PRVC_DEC_EVAL_PARAM_HPP
-#define PRVC_DEC_EVAL_PARAM_HPP
+#ifndef PRVC_PUBKEY_HPP
+#define PRVC_PUBKEY_HPP
 
-#include <cstdint>
+#include <iostream>
+#include <string>
+#include <memory>
 
-namespace prvc_dec
-{
-namespace eval
+#include <prvc_share/prvc_enctype.hpp>
+
+namespace prvc_share
 {
 
 /**
- * @brief This class is used to hold the parameter for encryptor.
- * The structure size is fixed 16 byte.
+ * @brief This class is used to hold the public key.
  */
-struct Param
+struct PubKey
 {
-    uint64_t ctx_size;
+    PubKey(const prvc_share::FHEcontext& context);
+    ~PubKey(void) = default;
+
+    void save_to_stream(std::ostream& os) const;
+    void load_from_stream(std::istream& is);
+
+    void save_to_file(const std::string& filepath) const;
+    void load_from_file(const std::string& filepath);
+
+    const prvc_share::FHEPubKey& get(void) const;
+
+private:
+    struct Impl;
+    std::shared_ptr<Impl> pimpl_;
 };
 
-} /* namespace eval */
-} /* namespace prvc_dec */
+} /* namespace prvc_share */
 
-#endif /* PRVC_DEC_EVAL_PARAM_HPP */
+#endif /* PRVC_PUBKEY_HPP */

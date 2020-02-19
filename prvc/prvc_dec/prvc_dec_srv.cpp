@@ -21,8 +21,7 @@
 #include <stdsc/stdsc_exception.hpp>
 #include <prvc_share/prvc_utility.hpp>
 #include <prvc_share/prvc_securekey_filemanager.hpp>
-#include <prvc_dec/prvc_dec_server.hpp>
-//#include <prvc_dec/prvc_dec_state.hpp>
+#include <prvc_dec/prvc_dec_srv.hpp>
 
 namespace prvc_dec
 {
@@ -30,41 +29,42 @@ namespace prvc_dec
 struct DecServer::Impl
 {
     Impl(const char* port, stdsc::CallbackFunctionContainer& callback,
-         stdsc::StateContext& state, prvc_share::SecureKeyFileManager& skm,
-         bool is_generate_securekey = false)
-        : server_(new stdsc::Server<>(port, state, callback)), state_(state), skm_(skm)
+         stdsc::StateContext& state,
+         prvc_share::SecureKeyFileManager& skm)
+        : server_(new stdsc::Server<>(port, state, callback)),
+          state_(state),
+          skm_(skm)
     {
         STDSC_LOG_INFO("Lanched Dec server (%s)", port);
-
-        if (is_generate_securekey) {
-            skm_.initialize();
-        }
     }
 
     ~Impl(void) = default;
 
     void start(void)
     {
-        if (!skm_.is_exist(SKM_DATAKIND_PUBKEY))
-        {
-            std::ostringstream oss;
-            oss << "Err: public key file was not found. (" << skm_.filename(SKM_DATAKIND_PUBKEY)
-                << ")" << std::endl;
-            STDSC_THROW_FILE(oss.str());
-        }
-        if (!skm_.is_exist(SKM_DATAKIND_SECKEY))
-        {
-            std::ostringstream oss;
-            oss << "Err: security key file was not found. (" << skm_.filename(SKM_DATAKIND_SECKEY)
-                << ")" << std::endl;
-            STDSC_THROW_FILE(oss.str());
+        auto kind_pubkey = static_cast<int32_t>(prvc_share::SecureKeyFileManager::Kind_t::kKindPubKey);
+        auto kind_seckey = static_cast<int32_t>(prvc_share::SecureKeyFileManager::Kind_t::kKindSecKey);
+
+        for (int32_t k=kind_pubkey; k<=kind_seckey; ++k) {
+            auto kind = static_cast<prvc_share::SecureKeyFileManager::Kind_t>(k);
+            if (!skm_.is_exist(kind))
+            {
+                std::ostringstream oss;
+                oss << "Err: key file not found. (" << skm_.filename(kind) << ")" << std::endl;
+                STDSC_THROW_FILE(oss.str());
+            }
         }
 
-        bool async = true;
-        server_->start(async);
+        bool enable_async_mode = true;
+        server_->start(enable_async_mode);
     }
 
-    void join(void)
+    void stop(void)
+    {
+        server_->stop();
+    }
+
+    void wait(void)
     {
         server_->wait();
     }
@@ -78,9 +78,8 @@ private:
 DecServer::DecServer(const char* port,
                      stdsc::CallbackFunctionContainer& callback,
                      stdsc::StateContext& state,
-                     prvc_share::SecureKeyFileManager& skm,
-                     bool is_generate_securekey)
-  : pimpl_(new Impl(port, callback, state, skm, is_generate_securekey))
+                     prvc_share::SecureKeyFileManager& skm)
+  : pimpl_(new Impl(port, callback, state, skm))
 {
 }
 
@@ -89,9 +88,14 @@ void DecServer::start(void)
     pimpl_->start();
 }
 
-void DecServer::join(void)
+void DecServer::stop(void)
 {
-    pimpl_->join();
+    pimpl_->stop();
+}
+
+void DecServer::wait(void)
+{
+    pimpl_->wait();
 }
 
 } /* namespace prvc_dec */

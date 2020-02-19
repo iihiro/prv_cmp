@@ -16,48 +16,14 @@
  */
 
 #include <memory>
-#include <stdsc/stdsc_exception.hpp>
-#include <stdsc/stdsc_buffer.hpp>
-#include <prvc_share/prvc_securekey_filemanager.hpp>
 #include <prvc_dec/prvc_dec_callback_param.hpp>
 
 namespace prvc_dec
 {
 
-struct CallbackParam::Impl
+
+CallbackParam::CallbackParam(void)
 {
-    Impl(void) = default;
-    ~Impl(void) = default;
-
-    void set_skm(std::shared_ptr<prvc_share::SecureKeyFileManager>& skm)
-    {
-        skm_ = skm;
-    }
-
-    prvc_share::SecureKeyFileManager& get_skm(void)
-    {
-        STDSC_THROW_FAILURE_IF_CHECK(skm_,
-                                     "Err: SecurekeyFilemanager is not set.");
-        return *skm_;
-    }
-
-private:
-    std::shared_ptr<prvc_share::SecureKeyFileManager> skm_;
-};
-
-CallbackParam::CallbackParam(void) : pimpl_(new Impl())
-{
-}
-
-void CallbackParam::set_skm(
-  std::shared_ptr<prvc_share::SecureKeyFileManager>& skm)
-{
-    pimpl_->set_skm(skm);
-}
-
-prvc_share::SecureKeyFileManager& CallbackParam::get_skm(void)
-{
-    return pimpl_->get_skm();
 }
 
 } /* namespace prvc_dec */

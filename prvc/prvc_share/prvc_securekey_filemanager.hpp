@@ -20,10 +20,6 @@
 
 #include <memory>
 
-#define SKM_DATAKIND_CONTEXT prvc_share::SecureKeyFileManager::kDataKindContext
-#define SKM_DATAKIND_PUBKEY  prvc_share::SecureKeyFileManager::kDataKindPubKey
-#define SKM_DATAKIND_SECKEY  prvc_share::SecureKeyFileManager::kDataKindSecKey
-
 namespace prvc_share
 {
 
@@ -39,29 +35,35 @@ class SecureKeyFileManager
     static constexpr double      DefaultSigma     = 32;
 
 public:
-    enum DataKind_t : uint32_t
+    enum Kind_t : int32_t
     {
-        kDataKindContext = 0,
-        kDataKindPubKey,
-        kDataKindSecKey,
-        kNumOfDataKind,
+        kKindUnknown = -1,
+        kKindPubKey  = 0,
+        kKindSecKey  = 1,
+        kKindContext = 2,
+        kNumOfKind,
     };
     
 public:
-    SecureKeyFileManager(const std::string& contest_filename,
-                         const std::string& pubkey_filename,
-                         const std::string& seckey_filename);
+    SecureKeyFileManager(const std::string& pubkey_filename,
+                         const std::string& seckey_filename,
+                         const std::string& contest_filename,
+                         const std::size_t mul_depth  = DefaultMulDepth,
+                         const std::size_t logN       = DefaultLogN,
+                         const std::size_t rel_window = DefaultRelWindow,
+                         const std::size_t dcrt_bits  = DefaultDcrtBits);
+                         
     ~SecureKeyFileManager(void) = default;
 
-    void initialize(const std::size_t mul_depth  = DefaultMulDepth,
-                    const std::size_t logN       = DefaultLogN,
-                    const std::size_t rel_window = DefaultRelWindow,
-                    const std::size_t dcrt_bits  = DefaultDcrtBits);
+    void initialize(void);
 
-    size_t size(const DataKind_t kind) const;
-    void data(const DataKind_t kind, void* buffer);
-    bool is_exist(const DataKind_t kind) const;
-    std::string filename(const DataKind_t kind) const;
+    size_t size(const Kind_t kind) const;
+    
+    void data(const Kind_t kind, void* buffer);
+    
+    bool is_exist(const Kind_t kind) const;
+    
+    std::string filename(const Kind_t kind) const;
 
 private:
     struct Impl;

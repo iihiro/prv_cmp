@@ -15,8 +15,8 @@
  * limitations under the License.
  */
 
-#ifndef PRVC_DEC_SERVER_HPP
-#define PRVC_DEC_SERVER_HPP
+#ifndef PRVC_DEC_SRV_HPP
+#define PRVC_DEC_SRV_HPP
 
 #include <memory>
 #include <string>
@@ -43,12 +43,12 @@ class DecServer
 public:
     DecServer(const char* port, stdsc::CallbackFunctionContainer& callback,
               stdsc::StateContext& state,
-              prvc_share::SecureKeyFileManager& skm,
-              bool is_generate_securekey = false);
+              prvc_share::SecureKeyFileManager& skm);
     ~DecServer(void) = default;
 
     void start();
-    void join(void);
+    void stop();
+    void wait(void);
 
 private:
     struct Impl;
@@ -57,4 +57,4 @@ private:
 
 } /* namespace prvc_dec */
 
-#endif /* PRVC_DEC_SERVER_HPP */
+#endif /* PRVC_DEC_SRV_HPP */

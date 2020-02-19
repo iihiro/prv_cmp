@@ -28,20 +28,32 @@ namespace prvc_share
  */
 enum ControlCode_t : uint64_t
 {
-    /* Code for Request packet: 0x201-0x2FF */
-    //kControlCodeRequestConnect = 0x201,
-    //kControlCodeRequestDisconnect = 0x201,
+    /* Code for Request packet: 0x0201-0x20FF */
 
-    /* Code for Data packet: 0x401-0x4FF */
-    kControlCodeDataPubkey = 0x401,
-    kControlCodeDataEVK = 0x402,
-    kControlCodeDataEncInputX = 0x403,
-    kControlCodeDataEncInputY = 0x404,
-    kControlCodeDataEncResult = 0x405,
+    /* Code for Data packet: 0x0401-0x04FF */
+    kControlCodeDataPubkey    = 0x0401,
+    kControlCodeDataEVK       = 0x0402,
+    kControlCodeDataEncInput  = 0x0403,
+    kControlCodeDataEncResult = 0x0404,
+    
     /* Code for Download packet: 0x801-0x8FF */
-    kControlCodeDownloadPubkey = 0x801,
-    kControlCodeDownloadEVK = 0x802,
+    kControlCodeDownloadPubkey = 0x0801,
+    kControlCodeDownloadEVK    = 0x0802,
+
+    /* Code for UpDownload packet: 0x1000-0x10FF */
+    kControlCodeGroupUpDownload   = 0x1000,
 };
+
+struct PubkeyDataHeader
+{
+    uint64_t pubkey_size;
+    uint64_t context_size;
+    uint64_t data_size()
+    {
+        return pubkey_size + context_size;
+    }
+};
+
 
 } /* namespace prvc_share */
 

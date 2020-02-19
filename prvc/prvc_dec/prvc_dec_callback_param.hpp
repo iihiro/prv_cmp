@@ -36,13 +36,11 @@ struct CallbackParam
 {
     CallbackParam(void);
     ~CallbackParam(void) = default;
-    
-    void set_skm(std::shared_ptr<prvc_share::SecureKeyFileManager>& skm);
-    prvc_share::SecureKeyFileManager& get_skm(void);
 
-private:
-    struct Impl;
-    std::shared_ptr<Impl> pimpl_;
+    std::shared_ptr<prvc_share::SecureKeyFileManager> skm_ptr;
+    //std::shared_ptr<prvc_share::Context> context_ptr;
+    //std::shared_ptr<prvc_share::PubKey>  pubkey_ptr;
+    //std::shared_ptr<prvc_share::SecKey>  seckey_ptr;
 };
 
 } /* namespace prvc_dec */
