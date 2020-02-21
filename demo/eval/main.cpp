@@ -60,6 +60,7 @@ void exec(const Option& option)
 
     stdsc::CallbackFunctionContainer callback;
     prvc_eval::CallbackParam param;
+    //prvc_eval::CommonCallbackParam cparam;
     
     std::shared_ptr<prvc_eval::Client> client(
         new prvc_eval::Client(host, PORT_DEC_SRV));
@@ -68,6 +69,11 @@ void exec(const Option& option)
     std::shared_ptr<stdsc::CallbackFunction> cb_input(
         new prvc_eval::CallbackFunctionEncInput());
     callback.set(prvc_share::kControlCodeDataEncInput, cb_input);
+
+    callback.set_commondata(static_cast<void*>(&param), sizeof(param),
+                            stdsc::kCommonDataOnEachConnection);
+    //callback.set_commondata(static_cast<void*>(&cparam), sizeof(cparam),
+    //stdsc::kCommonDataOnAllConnection);
 
     std::shared_ptr<prvc_eval::EvalServer> server
         = std::make_shared<prvc_eval::EvalServer>(PORT_EVAL_SRV, callback, state);

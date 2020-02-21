@@ -30,6 +30,7 @@
 #include <prvc_share/prvc_context.hpp>
 #include <prvc_share/prvc_encdata.hpp>
 #include <prvc_enc/prvc_enc_dec_client.hpp>
+#include <prvc_enc/prvc_enc_eval_client.hpp>
 #include <prvc_enc/prvc_enc.hpp>
 
 namespace prvc_enc
@@ -100,6 +101,7 @@ struct Encryptor::Impl
          const uint32_t retry_interval_usec,
          const uint32_t timeout_sec)
         : dec_client_(new DecClient(dec_host, dec_port)),
+          eval_client_(new EvalClient(eval_host, eval_port)),
           is_neg_mononical_coef_(is_neg_mononical_coef),
           retry_interval_usec_(retry_interval_usec),
           timeout_sec_(timeout_sec)
@@ -107,16 +109,13 @@ struct Encryptor::Impl
         STDSC_IF_CHECK(dl_pubkey, "False of dl_pubkey is not supported yet.");
 
         dec_client_->connect(retry_interval_usec_, timeout_sec_);
+        eval_client_->connect(retry_interval_usec_, timeout_sec_);
 
         context_ = std::make_shared<prvc_share::Context>();
         dec_client_->get_context(*context_);
         
         pubkey_ = std::make_shared<prvc_share::PubKey>(context_->get());
         dec_client_->get_pubkey(*pubkey_);
-
-        // test
-        //context_->save_to_file("context-enc.txt");
-        //pubkey_->save_to_file("pubkey-enc.txt");
     }
 
     ~Impl(void)
@@ -155,10 +154,13 @@ struct Encryptor::Impl
         encdata2.load_from_file("encinput.txt");
         encdata2.save_to_file("encinput2.txt");
 #endif
+
+        eval_client_->send_encdata(encdata);
     }
 
 private:
     std::shared_ptr<DecClient> dec_client_;
+    std::shared_ptr<EvalClient> eval_client_;
     const bool is_neg_mononical_coef_;
     const uint32_t retry_interval_usec_;
     const uint32_t timeout_sec_;

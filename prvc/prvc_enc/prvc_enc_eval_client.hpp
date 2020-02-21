@@ -44,7 +44,7 @@ public:
                  const uint32_t timeout_sec = PRVC_TIMEOUT_SEC);
     void disconnect();
     
-    void send_encdata(const int32_t session_id, const prvc_share::EncData& encdata);
+    void send_encdata(const prvc_share::EncData& encdata);
 
 private:
     struct Impl;

@@ -20,6 +20,7 @@
 
 #include <memory>
 #include <vector>
+#include <prvc_eval/prvc_eval_enc_comparator.hpp>
 
 namespace prvc_eval
 {
@@ -34,18 +35,9 @@ struct CallbackParam
     CallbackParam(void);
     ~CallbackParam(void) = default;
 
-    //std::string pubkey_filename;
-    //std::string context_filename;
-    //std::string encdata_filename;
-    //std::string encmodel_filename;
-
     void set_client(std::shared_ptr<prvc_eval::Client>& client);
     prvc_eval::Client& get_client(void);
     
-    //std::shared_ptr<prvc_share::EncData> encdata_ptr;
-    //std::shared_ptr<prvc_share::PermVec> permvec_ptr;
-    
-    //std::vector<long> permvec;
 private:
     struct Impl;
     std::shared_ptr<Impl> pimpl_;
@@ -55,10 +47,11 @@ private:
  * @brief This class is used to hold the callback parameters for Server#1 on CS.
  * This parameter to shared on all connections.
  */
-//struct CommonCallbackParam
-//{
-//    std::shared_ptr<prvc_share::EncData> encmodel_ptr;
-//};
+struct CommonCallbackParam
+{
+    // 受け取る2つのencinputをどう管理するかを再検討
+    //EncComparator coparator;
+};
 
 } /* namespace prvc_eval */
 

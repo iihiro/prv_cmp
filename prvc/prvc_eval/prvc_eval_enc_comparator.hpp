@@ -15,37 +15,32 @@
  * limitations under the License.
  */
 
-#ifndef PRVC_EVAL_CLIENT_HPP
-#define PRVC_EVAL_CLIENT_HPP
+#ifndef PRVC_EVAL_ENC_COMPARATOR_HPP
+#define PRVC_EVAL_ENC_COMPARATOR_HPP
 
 #include <memory>
-#include <prvc_share/prvc_define.hpp>
+#include <cstdbool>;
 
 namespace prvc_share
 {
-class PubKey;
-class Context;
+class EncData;
 }
 
 namespace prvc_eval
 {
-    
+
 /**
- * @brief Provides client.
+ * @brief This class is used to hold the encinput.
  */
-class Client
+class EncComparator
 {
-public:
-    Client(const char* dec_host,
-           const char* dec_port,
-           const bool dl_pubkey = true,
-           const uint32_t retry_interval_usec = PRVC_RETRY_INTERVAL_USEC,
-           const uint32_t timeout_sec = PRVC_TIMEOUT_SEC);
-    virtual ~Client(void) = default;
+    EncComparator(void);
+    ~EncComparator(void) = default;
 
-    const prvc_share::Context& context(void) const;
-
-    void compute(void);
+    void initialize(void);
+    void push(const prvc_share::EncData& encdata);
+    bool is_comparable(void) const;
+    void compare(void) const;
     
 private:
     struct Impl;
@@ -54,4 +49,4 @@ private:
 
 } /* namespace prvc_eval */
 
-#endif /* PRVC_EVAL_CLIENT_HPP */
+#endif /* PRVC_EVAL_ENC_COMPARATOR_HPP */

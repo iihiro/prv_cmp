@@ -53,11 +53,8 @@ struct Client::Impl
         context_ = std::make_shared<prvc_share::Context>();
         dec_client_->get_context(*context_);
         
-        pubkey_ = std::make_shared<prvc_share::PubKey>(context_->get());
-        dec_client_->get_pubkey(*pubkey_);
-
-        // test
-        //context_->save_to_file("context-eval.txt");
+        //pubkey_ = std::make_shared<prvc_share::PubKey>(context_->get());
+        //dec_client_->get_pubkey(*pubkey_);
     }
 
     ~Impl(void)
@@ -84,7 +81,7 @@ private:
     const uint32_t retry_interval_usec_;
     const uint32_t timeout_sec_;
     std::shared_ptr<prvc_share::Context> context_;
-    std::shared_ptr<prvc_share::PubKey> pubkey_;
+    //std::shared_ptr<prvc_share::PubKey> pubkey_;
 };
 
 Client::Client(const char* dec_host,
