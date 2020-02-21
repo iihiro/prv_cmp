@@ -15,32 +15,51 @@
  * limitations under the License.
  */
 
-#ifndef PRVC_EVAL_DEC_CLIENT_HPP
-#define PRVC_EVAL_DEC_CLIENT_HPP
+#ifndef PRVC_DEC_CLIENT_BASE_HPP
+#define PRVC_DEC_CLIENT_BASE_HPP
 
 #include <memory>
 #include <string>
-#include <prvc_share/prvc_dec_client_base.hpp>
+#include <prvc_share/prvc_define.hpp>
 
-namespace prvc_eval
+namespace stdsc
 {
+    class Client;
+}
+
+namespace prvc_share
+{
+    
+class PubKey;
+class Context;
     
 /**
  * @brief Provides client for Decryptor.
  */
-class DecClient : public prvc_share::DecClientBase
+class DecClientBase
 {
-    using super = prvc_share::DecClientBase;
-    
 public:
-    DecClient(const char* host, const char* port);
-    virtual ~DecClient(void) = default;
+    DecClientBase(const char* host, const char* port);
+    virtual ~DecClientBase(void) = default;
 
+    void connect(const uint32_t retry_interval_usec = PRVC_RETRY_INTERVAL_USEC,
+                 const uint32_t timeout_sec = PRVC_TIMEOUT_SEC);
+    void disconnect();
+    
+    void get_pubkey(prvc_share::PubKey& pubkey,
+                    const char* filename = "pubkey.txt");
+
+    void get_context(prvc_share::Context& context,
+                     const char* filename = "context.txt");
+
+protected:
+    stdsc::Client& client(void);
+    
 private:
     struct Impl;
     std::shared_ptr<Impl> pimpl_;
 };
-    
-} /* namespace prvc_eval */
 
-#endif /* PRVC_EVAL_DEC_CLIENT_HPP */
+} /* namespace prvc_share */
+
+#endif /* PRVC_DEC_CLIENT_BASE_HPP */

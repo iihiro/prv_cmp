@@ -6,7 +6,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE‐2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -20,28 +20,34 @@
 #include <stdsc/stdsc_log.hpp>
 #include <stdsc/stdsc_exception.hpp>
 #include <prvc_eval/prvc_eval_state.hpp>
-#include <prvc_eval/prvc_eval_thread.hpp>
+#include <prvc_eval/prvc_eval_srv.hpp>
 
 namespace prvc_eval
 {
 
-struct EvalThread::Impl
+struct EvalServer::Impl
 {
     Impl(const char* port, stdsc::CallbackFunctionContainer& callback,
          stdsc::StateContext& state)
         : server_(new stdsc::Server<>(port, state, callback)), state_(state)
     {
-        STDSC_LOG_INFO("Lanched Evaluator server (%s)", port);
+        STDSC_LOG_INFO("Lanched Eval server (%s)", port);
     }
 
     ~Impl(void) = default;
 
     void start(void)
     {
-        server_->start();
+        bool enable_async_mode = true;
+        server_->start(enable_async_mode);
     }
 
-    void join(void)
+    void stop(void)
+    {
+        server_->stop();
+    }
+
+    void wait(void)
     {
         server_->wait();
     }
@@ -51,21 +57,26 @@ private:
     stdsc::StateContext& state_;
 };
 
-EvalThread::EvalThread(const char* port,
+EvalServer::EvalServer(const char* port,
                        stdsc::CallbackFunctionContainer& callback,
                        stdsc::StateContext& state)
   : pimpl_(new Impl(port, callback, state))
 {
 }
 
-void EvalThread::start(void)
+void EvalServer::start(void)
 {
     pimpl_->start();
 }
 
-void EvalThread::join(void)
+void EvalServer::stop(void)
 {
-    pimpl_->join();
+    pimpl_->stop();
 }
 
+void EvalServer::wait(void)
+{
+    pimpl_->wait();
+}
+    
 } /* namespace prvc_eval */

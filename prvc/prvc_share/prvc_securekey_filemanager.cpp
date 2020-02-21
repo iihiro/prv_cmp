@@ -20,9 +20,10 @@
 #include <stdsc/stdsc_log.hpp>
 #include <stdsc/stdsc_exception.hpp>
 #include <prvc_share/prvc_utility.hpp>
-#include <prvc_share/prvc_securekey_filemanager.hpp>
 #include <prvc_share/prvc_cmp_param_list.hpp>
 #include <prvc_share/prvc_enctype.hpp>
+#include <prvc_share/prvc_securekey_filemanager.hpp>
+#include <prvc_share/prvc_pubkey.hpp> // for test
 
 #define CHECK_KIND(k) do {                                               \
         if (!((k) < kNumOfKind)) {                                       \
@@ -37,9 +38,9 @@ namespace prvc_share
 
 struct SecureKeyFileManager::Impl
 {
-    Impl(const std::string& context_filename,
-         const std::string& pubkey_filename,
+    Impl(const std::string& pubkey_filename,
          const std::string& seckey_filename,
+         const std::string& context_filename,
          const std::size_t mul_depth,
          const std::size_t logN,
          const std::size_t rel_window,
@@ -53,6 +54,17 @@ struct SecureKeyFileManager::Impl
         filenames_.emplace(kKindSecKey,  seckey_filename);
         filenames_.emplace(kKindContext, context_filename);
     }
+    
+    Impl(const std::string& pubkey_filename,
+         const std::string& seckey_filename,
+         const std::string& context_filename,
+         const std::string& config_filename)
+    {
+        filenames_.emplace(kKindPubKey,  pubkey_filename);
+        filenames_.emplace(kKindSecKey,  seckey_filename);
+        filenames_.emplace(kKindContext, context_filename);
+    }
+    
     ~Impl(void) = default;
 
     void initialize(void)
@@ -85,7 +97,7 @@ struct SecureKeyFileManager::Impl
         index_list.push_back(2 * N - 1);
         eval_automorph_ks = cc->EvalAutomorphismKeyGen(kp.secretKey, index_list);
         cc->InsertEvalAutomorphismKey(eval_automorph_ks);
-    
+
         lbcrypto::Serialized ctxK, pubK, privK, emkK;
         
         if( cc->Serialize(&ctxK) ) {
@@ -165,15 +177,24 @@ private:
     std::size_t dcrt_bits_;
 };
 
-SecureKeyFileManager::SecureKeyFileManager(const std::string& context_filename,
-                                           const std::string& pubkey_filename,
+SecureKeyFileManager::SecureKeyFileManager(const std::string& pubkey_filename,
                                            const std::string& seckey_filename,
+                                           const std::string& context_filename,
                                            const std::size_t mul_depth,
                                            const std::size_t logN,
                                            const std::size_t rel_window,
                                            const std::size_t dcrt_bits)
-    : pimpl_(new Impl(context_filename, pubkey_filename, seckey_filename,
+    : pimpl_(new Impl(pubkey_filename, seckey_filename, context_filename,
                       mul_depth, logN, rel_window, dcrt_bits))
+{
+}
+
+SecureKeyFileManager::SecureKeyFileManager(const std::string& pubkey_filename,
+                                           const std::string& seckey_filename,
+                                           const std::string& context_filename,
+                                           const std::string& config_filename)
+    : pimpl_(new Impl(pubkey_filename, seckey_filename, context_filename,
+                      config_filename))
 {
 }
 

@@ -15,51 +15,44 @@
  * limitations under the License.
  */
 
-#ifndef PRVC_EVAL_STATE_HPP
-#define PRVC_EVAL_STATE_HPP
-
-#include <cstdbool>
+#ifndef PRVC_EVAL_CLIENT_HPP
+#define PRVC_EVAL_CLIENT_HPP
 
 #include <memory>
-#include <stdsc/stdsc_state.hpp>
+#include <prvc_share/prvc_define.hpp>
+
+namespace prvc_share
+{
+class PubKey;
+class Context;
+}
 
 namespace prvc_eval
 {
-
+    
 /**
- * @brief Enumeration for state of Evaluator.
+ * @brief Provides client.
  */
-enum StateId_t : uint64_t
+class Client
 {
-    kStateNil   = 0,
-    kStateReady = 1,
-    kStateExit  = 2,
-};
+public:
+    Client(const char* dec_host,
+           const char* dec_port,
+           const bool dl_pubkey = true,
+           const uint32_t retry_interval_usec = PRVC_RETRY_INTERVAL_USEC,
+           const uint32_t timeout_sec = PRVC_TIMEOUT_SEC);
+    virtual ~Client(void) = default;
 
-/**
- * @brief Enumeration for events of Evaluator.
- */
-enum Event_t : uint64_t
-{
-    kEventNil       = 0,
-    kEventEncInput  = 1,
-};
+    //const prvc_share::PubKey&  pubkey(void)  const;
+    const prvc_share::Context& context(void) const;
 
-/**
- * @brief Provides 'Ready' state.
- */
-struct StateReady : public stdsc::State
-{
-    static std::shared_ptr<State> create(void);
-    StateReady(void);
-    virtual void set(stdsc::StateContext &sc, uint64_t event) override;
-    STDSC_STATE_DEFID(kStateReady);
-
+    void compute(void);
+    
 private:
     struct Impl;
     std::shared_ptr<Impl> pimpl_;
 };
 
-} /* prvc_eval */
+} /* namespace prvc_eval */
 
-#endif /* PRVC_EVAL_STATE_HPP */
+#endif /* PRVC_EVAL_CLIENT_HPP */

@@ -15,37 +15,39 @@
  * limitations under the License.
  */
 
-#ifndef PRVC_ENC_EVAL_CLINET_HPP
-#define PRVC_ENC_EVAL_CLINET_HPP
+#ifndef PRVC_ENC_HPP
+#define PRVC_ENC_HPP
 
 #include <memory>
-#include <string>
 #include <vector>
 #include <prvc_share/prvc_define.hpp>
 
-namespace prvc_share
-{
-class EncData;
-}
-
 namespace prvc_enc
 {
-
+    
 /**
- * @brief Provides client for Evaluator.
+ * @brief Provides encryptor.
  */
-class EvalClient
+class Encryptor
 {
 public:
-    EvalClient(const char* host, const char* port);
-    virtual ~EvalClient(void) = default;
-
-    void connect(const uint32_t retry_interval_usec = PRVC_RETRY_INTERVAL_USEC,
-                 const uint32_t timeout_sec = PRVC_TIMEOUT_SEC);
-    void disconnect();
     
-    void send_encdata(const int32_t session_id, const prvc_share::EncData& encdata);
+    Encryptor(const char* dec_host, const char* dec_port,
+              const char* eval_host, const char* eval_port,
+              const bool is_neg_mononical_coef,
+              const bool dl_pubkey = true,
+              const uint32_t retry_interval_usec = PRVC_RETRY_INTERVAL_USEC,
+              const uint32_t timeout_sec = PRVC_TIMEOUT_SEC);
+    virtual ~Encryptor(void) = default;
 
+    void compute(const uint64_t val,
+                 const size_t logN    = DefaultLogN,
+                 const size_t num_bit = DefaultNumBit);
+    
+private:
+    static constexpr std::size_t  DefaultLogN   = 13;
+    static constexpr std::size_t  DefaultNumBit = 30;
+                 
 private:
     struct Impl;
     std::shared_ptr<Impl> pimpl_;
@@ -53,4 +55,4 @@ private:
 
 } /* namespace prvc_enc */
 
-#endif /* PRVC_ENC_EVAL_CLINET_HPP */
+#endif /* PRVC_ENC_HPP */

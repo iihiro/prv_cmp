@@ -15,33 +15,40 @@
  * limitations under the License.
  */
 
-#ifndef PRVC_PUBKEY_HPP
-#define PRVC_PUBKEY_HPP
+#ifndef PRVC_ENCDATA_HPP
+#define PRVC_ENCDATA_HPP
 
-#include <iostream>
-#include <string>
 #include <memory>
-
+#include <prvc_share/prvc_basicdata.hpp>
 #include <prvc_share/prvc_enctype.hpp>
 
 namespace prvc_share
 {
 
+class PubKey;
+class SecKey;
+class Context;
+    
 /**
- * @brief This class is used to hold the public key.
+ * @brief This class is used to hold the encrypted data.
  */
-struct PubKey
+struct EncData : public prvc_share::BasicData<Ctxt>
 {
-    PubKey(const FHEcontext& context);
-    ~PubKey(void) = default;
+    explicit EncData(const Context& context);
+    virtual ~EncData(void) = default;
 
-    void save_to_stream(std::ostream& os) const;
-    void load_from_stream(std::istream& is);
+    void encrypt(const std::vector<lbcrypto::Plaintext>& inputdata,
+                 const PubKey& pubkey);
+
+    void decrypt(const FHESecKey& seckey,
+                 std::vector<lbcrypto::Plaintext>& outputdata) const;
+
+    virtual void save_to_stream(std::ostream& os) const override;
+    virtual void load_from_stream(std::istream& is) override;
 
     void save_to_file(const std::string& filepath) const;
     void load_from_file(const std::string& filepath);
 
-    const prvc_share::FHEPubKey& get(void) const;
 
 private:
     struct Impl;
@@ -50,4 +57,4 @@ private:
 
 } /* namespace prvc_share */
 
-#endif /* PRVC_PUBKEY_HPP */
+#endif /* PRVC_ENCDATA_HPP */

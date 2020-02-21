@@ -15,59 +15,26 @@
  * limitations under the License.
  */
 
-#ifndef PRVC_EVAL_CALLBACK_FUNCTION_HPP
-#define PRVC_EVAL_CALLBACK_FUNCTION_HPP
+#ifndef PRVC_EVAL_SRV1_CALLBACK_FUNCTION_HPP
+#define PRVC_EVAL_SRV1_CALLBACK_FUNCTION_HPP
 
 #include <stdsc/stdsc_callback_function.hpp>
 
 namespace prvc_eval
 {
 struct CallbackParam;
+}
+
+namespace prvc_eval
+{
+
+//using CallbackParam = prvc_eval::CallbackParam;
 
 /**
- * @brief Provides callback function in receiving encrypted input X
+ * @brief Provides callback function in receiving enc input.
  */
-class CallbackFunctionEncInputX : public stdsc::CallbackFunction
-{
-public:
-    CallbackFunctionEncInputX(CallbackParam& param) : param_(param)
-    {
-    }
-
-protected:
-    virtual void request_function(uint64_t code,
-                                  stdsc::StateContext& state) override;
-    virtual void data_function(uint64_t code, const stdsc::Buffer& buffer,
-                               stdsc::StateContext& state) override;
-    virtual void download_function(uint64_t code, const stdsc::Socket& sock,
-                                   stdsc::StateContext& state) override;
-
-private:
-    prvc_eval::CallbackParam& param_;
-};
-
-/**
- * @brief Provides callback function in receiving encrypted input Y
- */
-class CallbackFunctionEncInputY : public stdsc::CallbackFunction
-{
-public:
-    CallbackFunctionEncInputY(CallbackParam& param) : param_(param)
-    {
-    }
-
-protected:
-    virtual void request_function(uint64_t code,
-                                  stdsc::StateContext& state) override;
-    virtual void data_function(uint64_t code, const stdsc::Buffer& buffer,
-                               stdsc::StateContext& state) override;
-    virtual void download_function(uint64_t code, const stdsc::Socket& sock,
-                                   stdsc::StateContext& state) override;
-
-private:
-    prvc_eval::CallbackParam& param_;
-};
+DECLARE_DATA_CLASS(CallbackFunctionEncInput);
 
 } /* namespace prvc_eval */
 
-#endif /* PRVC_EVAL_CALLBACK_FUNCTION_HPP */
+#endif /* PRVC_EVAL_SRV1_CALLBACK_FUNCTION_HPP */

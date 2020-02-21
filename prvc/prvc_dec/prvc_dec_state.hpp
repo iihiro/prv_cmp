@@ -42,8 +42,8 @@ enum StateId_t : uint64_t
 enum Event_t : uint64_t
 {
     kEventNil            = 0,
-    kEventPubkeyReqest   = 1,
-    kEventEVKRequest     = 2,
+    kEventPubkeyRequest  = 1,
+    kEventContextRequest = 2,
     kEventDecryptRequest = 3,
 };
 

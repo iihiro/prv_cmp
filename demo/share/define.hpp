@@ -18,8 +18,7 @@
 #ifndef DEFINE_HPP
 #define DEFINE_HPP
 
-#define DEC_PORT_FOR_ENC  "10001"
-#define DEC_PORT_FOR_EVAL "10002"
-#define EVAL_PORT_FOR_ENC "10003"
+#define PORT_DEC_SRV  "10001"
+#define PORT_EVAL_SRV "10002"
 
 #endif /* DEFINE_HPP */

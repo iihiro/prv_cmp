@@ -22,11 +22,11 @@
 #include <stdsc/stdsc_log.hpp>
 #include <stdsc/stdsc_exception.hpp>
 #include <prvc_share/prvc_packet.hpp>
+#include <prvc_eval/prvc_eval_srv.hpp>
 #include <prvc_eval/prvc_eval_state.hpp>
-#include <prvc_eval/prvc_eval_dec_client.hpp>
-#include <prvc_eval/prvc_eval_thread.hpp>
 #include <prvc_eval/prvc_eval_callback_param.hpp>
 #include <prvc_eval/prvc_eval_callback_function.hpp>
+#include <prvc_eval/prvc_eval_client.hpp>
 #include <share/define.hpp>
 
 static constexpr char* CONTEXT_FILENAME = (char*)"context.txt";
@@ -52,38 +52,27 @@ void init(Option& option, int argc, char* argv[])
     }
 }
 
-void create_enc_server(prvc_eval::CallbackParam& param,
-                       stdsc::StateContext& state,
-                       const char* port = EVAL_PORT_FOR_ENC)
-{
-    stdsc::CallbackFunctionContainer callback;
-
-    std::shared_ptr<stdsc::CallbackFunction> cb_enc_x(
-      new prvc_eval::CallbackFunctionEncInputX(param));
-    callback.set(prvc_share::kControlCodeDataEncInputX, cb_enc_x);
-    
-    std::shared_ptr<stdsc::CallbackFunction> cb_enc_y(
-      new prvc_eval::CallbackFunctionEncInputY(param));
-    callback.set(prvc_share::kControlCodeDataEncInputY, cb_enc_y);
-
-    prvc_eval::EvalThread server(port, callback, state);
-    server.start();
-    server.join();
-}
-
 void exec(const Option& option)
 {
-    std::string context_filepath = CONTEXT_FILENAME;
+    const char* host   = "localhost";
+
+    stdsc::StateContext state(std::make_shared<prvc_eval::StateReady>());
+
+    stdsc::CallbackFunctionContainer callback;
+    prvc_eval::CallbackParam param;
     
-    STDSC_LOG_INFO("Launched Evaluator demo app");
-    stdsc::StateContext state(std::make_shared<prvc_eval::StateInit>());
+    std::shared_ptr<prvc_eval::Client> client(
+        new prvc_eval::Client(host, PORT_DEC_SRV));
+    param.set_client(client);
 
-    prvc_eval::DecClient client("localhost", DEC_PORT_FOR_EVAL, state);
-    client.download_evk(context_filepath.c_str());
+    std::shared_ptr<stdsc::CallbackFunction> cb_input(
+        new prvc_eval::CallbackFunctionEncInput());
+    callback.set(prvc_share::kControlCodeDataEncInput, cb_input);
 
-    prvc_eval::CallbackParam param(context_filepath, client);
-    state.set(prvc_eval::kEventSendEVKRequest);
-    create_enc_server(param, state);
+    std::shared_ptr<prvc_eval::EvalServer> server
+        = std::make_shared<prvc_eval::EvalServer>(PORT_EVAL_SRV, callback, state);
+    server->start();
+    server->wait();
 }
 
 int main(int argc, char* argv[])

@@ -6,7 +6,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE‐2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,39 +15,39 @@
  * limitations under the License.
  */
 
-#ifndef PRVC_EVAL_THEAD_HPP
-#define PRVC_EVAL_THEAD_HPP
+#ifndef PRVC_SECKEY_HPP
+#define PRVC_SECKEY_HPP
 
-#include <memory>
+#include <iostream>
 #include <string>
+#include <memory>
 
-namespace stdsc
-{
-class CallbackFunctionContainer;
-class StateContext;
-}
+#include <prvc_share/prvc_enctype.hpp>
 
-namespace prvc_eval
+namespace prvc_share
 {
 
 /**
- * @brief Provides Evalulator server.
+ * @brief This class is used to hold the secret key.
  */
-class EvalThread
+struct SecKey
 {
-public:
-    EvalThread(const char* port, stdsc::CallbackFunctionContainer& callback,
-               stdsc::StateContext& state);
-    ~EvalThread(void) = default;
+    SecKey(const FHEcontext& context);
+    ~SecKey(void) = default;
 
-    void start(void);
-    void join(void);
+    void save_to_stream(std::ostream& os) const;
+    void load_from_stream(std::istream& is);
+
+    void save_to_file(const std::string& filepath) const;
+    void load_from_file(const std::string& filepath);
+
+    const prvc_share::FHESecKey& get(void) const;
 
 private:
     struct Impl;
     std::shared_ptr<Impl> pimpl_;
 };
 
-} /* namespace prvc_eval */
+} /* namespace prvc_share */
 
-#endif /* PRVC_EVAL_THEAD_HPP */
+#endif /* PRVC_SECKEY_HPP */

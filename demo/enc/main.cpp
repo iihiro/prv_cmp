@@ -20,35 +20,40 @@
 #include <iostream>
 #include <stdsc/stdsc_log.hpp>
 #include <stdsc/stdsc_exception.hpp>
+#include <prvc_enc/prvc_enc.hpp>
 #include <prvc_enc/prvc_enc_dec_client.hpp>
-#include <prvc_enc/prvc_enc_eval_client.hpp>
 #include <share/define.hpp>
+
+#define PRINT_USAGE() printf("Usage: %s <value>\n", argv[0])
 
 static constexpr const char* CONTEXT_FILENAME = "context.txt";
 static constexpr const char* PUBKEY_FILENAME  = "pubkey.txt";
 
 struct Option
 {
-    prvc_enc::EncryptorKind kind;
+    uint64_t input_value;
 };
 
 void init(Option& option, int argc, char* argv[])
 {
     int opt;
     opterr = 0;
-    while ((opt = getopt(argc, argv, "k:h")) != -1)
+    while ((opt = getopt(argc, argv, "h")) != -1)
     {
         switch (opt)
         {
-            case 'k':
-                option.kind = static_cast<prvc_enc::EncryptorKind>(std::stol(optarg));
-                break;
             case 'h':
             default:
-                printf("Usage: %s [-k kind]\n",
-                       argv[0]);
+                PRINT_USAGE();
                 exit(1);
         }
+    }
+
+    if (optind < argc) {
+        option.input_value = std::stol(argv[optind]);
+    } else {
+        PRINT_USAGE();
+        exit(1);
     }
 }
 
@@ -56,24 +61,8 @@ void exec(Option& option)
 {
     const char* host = "localhost";
 
-    prvc_enc::DecParam dec_param;
-    dec_param.context_filename = CONTEXT_FILENAME; 
-    dec_param.pubkey_filename  = PUBKEY_FILENAME;
-    prvc_enc::DecClient<> dec_client(host, DEC_PORT_FOR_ENC);
-    dec_client.start(dec_param);
-    dec_client.wait_for_finish();
-
-    prvc_enc::EvalParam eval_param;
-    eval_param.input_value      = (option.kind == prvc_enc::kEncryptorKindX) ? 10 : 6;
-    eval_param.numbit           = 30;
-    eval_param.logN             = 13;
-    eval_param.is_neg           = (option.kind == prvc_enc::kEncryptorKindX) ? false : true;
-    eval_param.context_filename = CONTEXT_FILENAME; 
-    eval_param.pubkey_filename  = PUBKEY_FILENAME;
-    prvc_enc::EvalClient<> eval_client(host, EVAL_PORT_FOR_ENC, option.kind);
-    eval_client.start(eval_param);
-
-    eval_client.wait_for_finish();
+    prvc_enc::Encryptor enc(host, PORT_DEC_SRV, host, PORT_EVAL_SRV, false);
+    enc.compute(option.input_value);
 }
 
 int main(int argc, char* argv[])

@@ -29,8 +29,6 @@
 #include <prvc_dec/prvc_dec_callback_function.hpp>
 #include <prvc_dec/prvc_dec_callback_param.hpp>
 #include <prvc_dec/prvc_dec_state.hpp>
-//#include <prvc_dec/prvc_dec_enc_param.hpp>
-
 
 namespace prvc_dec
 {
@@ -43,15 +41,41 @@ DEFUN_DOWNLOAD(CallbackFunctionPubkeyRequest)
 
     DEF_CDATA_ON_EACH(prvc_dec::CallbackParam);
 
-    //auto  kind = prvc_share::SecureKeyFileManager::Kind_t::kKindPubKey;
-    //auto& skm  = *cdata_e->skm_ptr;
-    //stdsc::Buffer pubkey(skm.size(kind));
-    //skm.data(kind, pubkey.data());
-    //STDSC_LOG_INFO("Sending public key.");
-    //sock.send_packet(stdsc::make_data_packet(nbc_share::kControlCodeDataPubkey,
-    //                                         skm.size(kind)));
-    //sock.send_buffer(pubkey);
-    //state.set(kEventPubkeyRequest);
+    auto  kind = prvc_share::SecureKeyFileManager::Kind_t::kKindPubKey;
+    auto& skm  = *cdata_e->skm_ptr;
+    stdsc::Buffer pubkey(skm.size(kind));
+    skm.data(kind, pubkey.data());
+    STDSC_LOG_INFO("Sending public key.");
+    sock.send_packet(stdsc::make_data_packet(prvc_share::kControlCodeDataPubkey,
+                                             skm.size(kind)));
+    sock.send_buffer(pubkey);
+    state.set(kEventPubkeyRequest);
+}
+
+// CallbackFunctionContextRequest
+DEFUN_DOWNLOAD(CallbackFunctionContextRequest)
+{
+    STDSC_LOG_INFO("Received context request. (current state : %s)",
+                   state.current_state_str().c_str());
+
+    DEF_CDATA_ON_EACH(prvc_dec::CallbackParam);
+
+    auto  kind = prvc_share::SecureKeyFileManager::Kind_t::kKindContext;
+    auto& skm  = *cdata_e->skm_ptr;
+    stdsc::Buffer context(skm.size(kind));
+    skm.data(kind, context.data());
+    STDSC_LOG_INFO("Sending context.");
+    sock.send_packet(stdsc::make_data_packet(prvc_share::kControlCodeDataContext,
+                                             skm.size(kind)));
+    sock.send_buffer(context);
+    state.set(kEventContextRequest);
+}
+
+// CallbackFunctionDecryptRequest
+DEFUN_DATA(CallbackFunctionDecryptRequest)
+{
+    STDSC_LOG_INFO("Received decrypt request. (current state : %s)",
+                   state.current_state_str().c_str());
 }
 
 } /* namespace prvc_dec */

@@ -7,7 +7,7 @@ set(CMAKE_PALISADE_DIR "/home/$ENV{USER}/palisade-release")
 
 find_package(Threads REQUIRED)
 set(CMAKE_CXX_FLAGS "-O3 -std=c++17 -openmp -pthread -Wall -DNDEBUG")
-set(CMAKE_CXX_FLAGS_DEBUG "-O2 -g -std=c++17 -openmp -pthread -Wall")
+set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g3 -std=c++17 -openmp -pthread -Wall")
 
 set(CMAKE_LIB_PALISADE "${CMAKE_PALISADE_DIR}/bin/lib")
 set(CMAKE_THIRDPARTY_LIB_PALISADE "${CMAKE_PALISADE_DIR}/third-party/lib")

@@ -16,8 +16,10 @@
  */
 
 #include <fstream>
-#include <vector>
 #include <cstring>
+#include <cstdlib>
+#include <ctime>
+#include <iostream>
 #include <stdsc/stdsc_buffer.hpp>
 #include <stdsc/stdsc_socket.hpp>
 #include <stdsc/stdsc_packet.hpp>
@@ -25,85 +27,55 @@
 #include <stdsc/stdsc_exception.hpp>
 #include <stdsc/stdsc_log.hpp>
 #include <prvc_share/prvc_packet.hpp>
-#include <prvc_share/prvc_securekey_filemanager.hpp>
-#include <prvc_share/prvc_encdata.hpp>
-#include <prvc_eval/prvc_eval_callback_function.hpp>
+#include <prvc_share/prvc_pubkey.hpp>
+#include <prvc_share/prvc_context.hpp>
 #include <prvc_eval/prvc_eval_callback_param.hpp>
+#include <prvc_eval/prvc_eval_client.hpp>
 #include <prvc_eval/prvc_eval_state.hpp>
-#include <prvc_eval/prvc_eval_evaluator.hpp>
+#include <prvc_eval/prvc_eval_callback_function.hpp>
 
 namespace prvc_eval
 {
 
-// CallbackFunctionEncInputX
-
-void CallbackFunctionEncInputX::data_function(uint64_t code,
-                                              const stdsc::Buffer& buffer,
-                                              stdsc::StateContext& state)
+// CallbackFunctionEncInput
+DEFUN_DATA(CallbackFunctionEncInput)
 {
-    STDSC_LOG_INFO("Received encrypted input X (current state : %lu)",
-                   state.current_state());
-    STDSC_THROW_CALLBACK_IF_CHECK(
-      kStateReady <= state.current_state(),
-      "Warn: must be ready state to receive encrypted inptu data.");
+    STDSC_LOG_INFO("Received input data. (current state : %s)",
+                   state.current_state_str().c_str());
 
-    stdsc::BufferStream buffstream(buffer);
-    std::iostream stream(&buffstream);
+    DEF_CDATA_ON_EACH(prvc_eval::CallbackParam);
 
-    const auto& context = param_.context();
-    param_.enc_input_x_->load_from_stream(stream, context);
-
-    state.set(kEventReceivedEncInputX);
-
-    std::vector<Ctxt> vec_enc_result;
-    Ctxt enc_result;
-    
-    if (kStateComputed == state.current_state()) {
-        auto nsplit = param_.enc_input_x_->data().size();
-        std::shared_ptr<prvc_eval::Evaluator> eval(new prvc_eval::Evaluator(context, nsplit));
-        eval->comparision(*param_.enc_input_x_,
-                          *param_.enc_input_y_,
-                          vec_enc_result,
-                          enc_result);
-    }
+    //stdsc::BufferStream buffstream(buffer);
+    //std::iostream stream(&buffstream);
+    //
+    //auto& client = cdata_e->get_client();
+    //
+    //std::shared_ptr<prvc_share::EncData> encdata_ptr(new prvc_share::EncData(client.pubkey()));
+    //encdata_ptr->load_from_stream(stream);
+    //cdata_e->encdata_ptr = encdata_ptr;
+    //
+    //std::shared_ptr<prvc_share::PermVec> permvec_ptr(new prvc_share::PermVec());
+    //permvec_ptr->load_from_stream(stream);
+    //cdata_e->permvec_ptr = permvec_ptr;
+    //
+    //encdata_ptr->save_to_file(cdata_e->encdata_filename);
+    //
+    //{
+    //    const auto& vec = permvec_ptr->vdata();
+    //    cdata_e->permvec.resize(vec.size(), -1);
+    //    std::memcpy(cdata_e->permvec.data(), vec.data(), sizeof(long) * vec.size());
+    //}
+    //
+    //{        
+    //    std::ostringstream oss;
+    //    oss << "permvec: sz=" << cdata_e->permvec.size();
+    //    oss << ", data=";
+    //    for (auto& v : cdata_e->permvec) oss << " " << v;
+    //    STDSC_LOG_DEBUG(oss.str().c_str());
+    //}
+    //
+    //state.set(kEventEncInput);
+    //state.set(kEventPermVec);
 }
-DEFINE_REQUEST_FUNC(CallbackFunctionEncInputX);
-DEFINE_DOWNLOAD_FUNC(CallbackFunctionEncInputX);
-
-
-// CallbackFunctionEncInputY
-
-void CallbackFunctionEncInputY::data_function(uint64_t code,
-                                              const stdsc::Buffer& buffer,
-                                              stdsc::StateContext& state)
-{
-    STDSC_LOG_INFO("Received encrypted input Y (current state : %lu)",
-                   state.current_state());
-    STDSC_THROW_CALLBACK_IF_CHECK(
-      kStateReady <= state.current_state(),
-      "Warn: must be ready state to receive encrypted inptu data.");
-
-    stdsc::BufferStream buffstream(buffer);
-    std::iostream stream(&buffstream);
-
-    const auto& context = param_.context();
-    param_.enc_input_y_->load_from_stream(stream, context);
-
-    state.set(kEventReceivedEncInputY);
-
-    std::vector<Ctxt> vec_enc_result;
-    Ctxt enc_result;
-    
-    if (kStateComputed == state.current_state()) {
-        auto nsplit = param_.enc_input_x_->data().size();
-        std::shared_ptr<prvc_eval::Evaluator> eval(new prvc_eval::Evaluator(context, nsplit));
-        eval->comparision(*param_.enc_input_x_,
-                          *param_.enc_input_y_,
-                          vec_enc_result,
-                          enc_result);
-    }
-}
-DEFINE_REQUEST_FUNC(CallbackFunctionEncInputY);
-DEFINE_DOWNLOAD_FUNC(CallbackFunctionEncInputY);
 
 } /* namespace prvc_eval */

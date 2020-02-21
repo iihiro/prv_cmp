@@ -6,7 +6,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE‐2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,37 +15,47 @@
  * limitations under the License.
  */
 
-#include <prvc_share/prvc_enctype.hpp>
-#include <prvc_share/prvc_encdata.hpp>
-#include <prvc_share/prvc_utility.hpp>
-#include <prvc_share/prvc_encutility.hpp>
-#include <prvc_eval/prvc_eval_dec_client.hpp>
+#include <stdsc/stdsc_exception.hpp>
+#include <stdsc/stdsc_buffer.hpp>
+#include <prvc_eval/prvc_eval_client.hpp>
 #include <prvc_eval/prvc_eval_callback_param.hpp>
 
 namespace prvc_eval
 {
 
-CallbackParam::CallbackParam(const std::string& context_filepath, DecClient& client)
-    : client_(client),
-      //context_(new FHEContext()),
-      enc_input_x_(new prvc_share::EncData()),
-      enc_input_y_(new prvc_share::EncData())
+struct CallbackParam::Impl
 {
-    if (!prvc_share::utility::file_exist(context_filepath)) {
-        client_.download_evk(context_filepath.c_str());
-    }
-    lbcrypto::Serialized ser_context;
-    STDSC_THROW_FILE_IF_CHECK(
-        prvc_share::encutility::read_from_file(context_filepath, ser_context),
-        "failed to read context file");
-    //*context_ = lbcrypto::CryptoContextFactory<PolyType>::DeserializeAndCreateContext(ser_context)
-    context_ = lbcrypto::CryptoContextFactory<PolyType>::DeserializeAndCreateContext(ser_context);
-}
+    Impl(void) = default;
+    ~Impl(void) = default;
 
-const FHEContext& CallbackParam::context() const
+    void set_client(std::shared_ptr<prvc_eval::Client>& client)
+    {
+        client_ = client;
+    }
+    
+    prvc_eval::Client& get_client(void)
+    {
+        STDSC_THROW_FAILURE_IF_CHECK(client_,
+                                     "Err: Client is not set.");
+        return *client_;
+    }
+    
+private:
+    std::shared_ptr<prvc_eval::Client> client_;
+};
+
+CallbackParam::CallbackParam(void)
+    : pimpl_(new Impl())
+{}
+
+void CallbackParam::set_client(std::shared_ptr<prvc_eval::Client>& client)
 {
-    //return *context_;
-    return context_;
+    pimpl_->set_client(client);
+}
+    
+prvc_eval::Client& CallbackParam::get_client(void)
+{
+    return pimpl_->get_client();
 }
 
 } /* namespace prvc_eval */

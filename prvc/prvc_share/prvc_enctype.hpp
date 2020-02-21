@@ -15,6 +15,7 @@ namespace prvc_share
     using FHEcontext = lbcrypto::CryptoContext<PolyType>;
     using FHEPubKey  = lbcrypto::LPPublicKey<PolyType>;
     using FHESecKey  = lbcrypto::LPPrivateKey<PolyType>;
+    using FHEKeyPair = lbcrypto::LPKeyPair<PolyType>;
 }
 
 #endif /*PRV_ENCTYPE_HPP*/

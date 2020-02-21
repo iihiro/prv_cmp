@@ -52,7 +52,12 @@ public:
                          const std::size_t logN       = DefaultLogN,
                          const std::size_t rel_window = DefaultRelWindow,
                          const std::size_t dcrt_bits  = DefaultDcrtBits);
-                         
+
+    SecureKeyFileManager(const std::string& pubkey_filename,
+                         const std::string& seckey_filename,
+                         const std::string& contest_filename,
+                         const std::string& config_filename);
+    
     ~SecureKeyFileManager(void) = default;
 
     void initialize(void);

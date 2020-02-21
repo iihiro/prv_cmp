@@ -30,9 +30,9 @@ struct CallbackParam;
 DECLARE_DOWNLOAD_CLASS(CallbackFunctionPubkeyRequest);
 
 /**
- * @brief Provides callback function in receiving evk request.
+ * @brief Provides callback function in receiving context request.
  */
-DECLARE_DOWNLOAD_CLASS(CallbackFunctionEVKRequest);
+DECLARE_DOWNLOAD_CLASS(CallbackFunctionContextRequest);
 
 /**
  * @brief Provides callback function in receiving decrypt request.

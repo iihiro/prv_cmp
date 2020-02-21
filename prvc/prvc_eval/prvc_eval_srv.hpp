@@ -6,7 +6,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE‐2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,34 +15,34 @@
  * limitations under the License.
  */
 
-#ifndef PRVC_EVAL_EVALUATOR_HPP
-#define PRVC_EVAL_EVALUATOR_HPP
+#ifndef PRVC_EVAL_SRV1_HPP
+#define PRVC_EVAL_SRV1_HPP
 
 #include <memory>
+#include <string>
 
-#include <prvc_share/prvc_enctype.hpp>
-
-namespace prvc_share
+namespace stdsc
 {
-    class EncData;
+class CallbackFunctionContainer;
+class StateContext;
 }
 
 namespace prvc_eval
 {
 
 /**
- * @brief Evaluator
+ * @brief Provides Server on Evaluator.
  */
-class Evaluator
+class EvalServer
 {
 public:
-    Evaluator(const FHEContext& context, const size_t nsplit);
-    virtual ~Evaluator(void) = default;
+    EvalServer(const char* port, stdsc::CallbackFunctionContainer& callback,
+               stdsc::StateContext& state);
+    ~EvalServer(void) = default;
 
-    void comparision(const prvc_share::EncData& enc_input_x,
-                     const prvc_share::EncData& enc_input_y,
-                     std::vector<Ctxt>& vec_enc_result,
-                     Ctxt& enc_result);
+    void start(void);
+    void stop(void);
+    void wait(void);
 
 private:
     struct Impl;
@@ -51,4 +51,4 @@ private:
 
 } /* namespace prvc_eval */
 
-#endif /*PRVC_EVAL_EVALUATOR_HPP*/
+#endif /* PRVC_EVAL_SRV1_HPP */

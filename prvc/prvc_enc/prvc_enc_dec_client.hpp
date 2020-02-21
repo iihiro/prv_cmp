@@ -20,41 +20,28 @@
 
 #include <memory>
 #include <vector>
-#include <string>
-#include <stdsc/stdsc_thread.hpp>
+#include <prvc_share/prvc_dec_client_base.hpp>
 
 namespace prvc_enc
 {
 
-class DecParam;
-
 /**
  * @brief Provides client for Decryptor
  */
-template <class T = DecParam>
-class DecClient : public stdsc::Thread<T>
+class DecClient : public prvc_share::DecClientBase
 {
-    using super = stdsc::Thread<T>;
+    using super = prvc_share::DecClientBase;
 
 public:
     DecClient(const char* host, const char* port);
-    virtual ~DecClient(void);
+    virtual ~DecClient(void) = default;
 
-    void start(T& param);
-    void wait_for_finish(void);
-
+    void get_results(int64_t& result_overall,
+                     std::vector<int64_t>& result_chunks) const;
+    
 private:
-    virtual void exec(T& args,
-                      std::shared_ptr<stdsc::ThreadException> te) const;
-
     struct Impl;
     std::shared_ptr<Impl> pimpl_;
-};
-
-struct DecParam
-{
-    std::string context_filename = "context.txt";
-    std::string pubkey_filename  = "pukey.txt";
 };
 
 } /* namespace prvc_enc */
