@@ -48,6 +48,10 @@ struct EncComparator::Impl
 
     void compare(void) const
     {
+        const auto& c_x_chunks = vencdata_.at(0).data();
+        const auto& c_y_chunks = vencdata_.at(1).data();
+
+        
     }
 
 private:

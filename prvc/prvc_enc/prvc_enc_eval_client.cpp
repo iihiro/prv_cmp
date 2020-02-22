@@ -28,6 +28,8 @@
 #include <prvc_share/prvc_define.hpp>
 #include <prvc_share/prvc_pubkey.hpp>
 #include <prvc_share/prvc_encdata.hpp>
+#include <prvc_share/prvc_encparam.hpp>
+#include <prvc_share/prvc_plaindata.hpp>
 #include <prvc_enc/prvc_enc_eval_client.hpp>
 
 namespace prvc_enc
@@ -58,32 +60,31 @@ struct EvalClient::Impl
         client_.close();
     }
     
-    void send_encdata(const prvc_share::EncData& encdata)
+    //void send_encdata(const prvc_share::EncData& encdata)
+    //{
+    //    stdsc::BufferStream buffstream(encdata.stream_size());
+    //    std::iostream stream(&buffstream);
+    //    encdata.save_to_stream(stream);
+    //
+    //    STDSC_LOG_INFO("Sending encrypted input.");
+    //    stdsc::Buffer* buffer = &buffstream;
+    //    client_.send_data_blocking(prvc_share::kControlCodeDataEncInput, *buffer);
+    //}
+
+    void send_input(const prvc_share::EncData& encdata,
+                    const prvc_share::PlainData<prvc_share::EncParam>& plaindata)
     {
-        stdsc::BufferStream buffstream(encdata.stream_size());
+        auto sz = encdata.stream_size() + plaindata.stream_size();
+        stdsc::BufferStream buffstream(sz);
         std::iostream stream(&buffstream);
+
         encdata.save_to_stream(stream);
+        plaindata.save_to_stream(stream);
 
         STDSC_LOG_INFO("Sending encrypted input.");
         stdsc::Buffer* buffer = &buffstream;
         client_.send_data_blocking(prvc_share::kControlCodeDataEncInput, *buffer);
     }
-
-    //void send_input(const int32_t session_id,
-    //                const prvc_share::EncData& encdata,
-    //                const prvc_share::PermVec& permvec)
-    //{
-    //    auto size = encdata.stream_size() + permvec.stream_size();
-    //    stdsc::BufferStream buffstream(size);
-    //    std::iostream stream(&buffstream);
-    //
-    //    encdata.save_to_stream(stream);
-    //    permvec.save_to_stream(stream);
-    //    
-    //    STDSC_LOG_INFO("Sending input data.");
-    //    stdsc::Buffer* buffer = &buffstream;
-    //    client_.send_data_blocking(prvc_share::kControlCodeDataInput, *buffer);
-    //}
     
 private:
     const char* host_;
@@ -107,16 +108,15 @@ void EvalClient::disconnect(void)
     pimpl_->disconnect();
 }
     
-void EvalClient::send_encdata(const prvc_share::EncData& encdata)
-{
-    pimpl_->send_encdata(encdata);
-}
-
-//void EvalClient::send_input(const int32_t session_id,
-//                          const prvc_share::EncData& encdata,
-//                          const prvc_share::PermVec& permvec)
+//void EvalClient::send_encdata(const prvc_share::EncData& encdata)
 //{
-//    pimpl_->send_input(session_id, encdata, permvec);
+//    pimpl_->send_encdata(encdata);
 //}
+
+void EvalClient::send_input(const prvc_share::EncData& encdata,
+                            const prvc_share::PlainData<prvc_share::EncParam>& plaindata)
+{
+    pimpl_->send_input(encdata, plaindata);
+}
 
 } /* namespace prvc_enc */

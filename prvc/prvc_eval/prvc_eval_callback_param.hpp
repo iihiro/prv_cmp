@@ -49,8 +49,12 @@ private:
  */
 struct CommonCallbackParam
 {
-    // 受け取る2つのencinputをどう管理するかを再検討
-    //EncComparator coparator;
+    CommonCallbackParam(void)
+        : comparator_(new EncComparator())
+    {}
+    ~CommonCallbackParam(void) = default;
+
+    std::shared_ptr<EncComparator> comparator_;
 };
 
 } /* namespace prvc_eval */

@@ -15,39 +15,25 @@
  * limitations under the License.
  */
 
-#ifndef PRVC_EVAL_ENC_COMPARATOR_HPP
-#define PRVC_EVAL_ENC_COMPARATOR_HPP
+#ifndef PRVC_ENCPARAM_HPP
+#define PRVC_ENCPARAM_HPP
 
-#include <memory>
-#include <cstdbool>;
+#include <iostream>
 
 namespace prvc_share
 {
-class EncData;
-}
-
-namespace prvc_eval
-{
 
 /**
- * @brief This class is used to hold the encinput.
+ * @brief This clas is used to hold the parameters to compute on evaluator.
  */
-class EncComparator
+struct EncParam
 {
-public:
-    EncComparator(void);
-    ~EncComparator(void) = default;
-
-    void initialize(void);
-    void push(const prvc_share::EncData& encdata);
-    bool is_comparable(void) const;
-    void compare(void) const;
-    
-private:
-    struct Impl;
-    std::shared_ptr<Impl> pimpl_;
+    size_t num_chunk;
 };
 
-} /* namespace prvc_eval */
+std::ostream& operator<<(std::ostream& os, const EncParam& param);
+std::istream& operator>>(std::istream& is, EncParam& param);
 
-#endif /* PRVC_EVAL_ENC_COMPARATOR_HPP */
+} /* namespace prvc_share */
+
+#endif /* PRVC_ENCPARAM_HPP */

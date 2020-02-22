@@ -29,6 +29,8 @@
 #include <prvc_share/prvc_pubkey.hpp>
 #include <prvc_share/prvc_context.hpp>
 #include <prvc_share/prvc_encdata.hpp>
+#include <prvc_share/prvc_encparam.hpp>
+#include <prvc_share/prvc_plaindata.hpp>
 #include <prvc_enc/prvc_enc_dec_client.hpp>
 #include <prvc_enc/prvc_enc_eval_client.hpp>
 #include <prvc_enc/prvc_enc.hpp>
@@ -155,7 +157,14 @@ struct Encryptor::Impl
         encdata2.save_to_file("encinput2.txt");
 #endif
 
-        eval_client_->send_encdata(encdata);
+        printf("num_chunk: %lu\n", num_chunk);
+        prvc_share::EncParam param;
+        param.num_chunk = num_chunk;
+
+        prvc_share::PlainData<prvc_share::EncParam> plaindata;
+        plaindata.push(param);
+
+        eval_client_->send_input(encdata, plaindata);
     }
 
 private:

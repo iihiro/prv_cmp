@@ -30,6 +30,8 @@
 #include <prvc_share/prvc_pubkey.hpp>
 #include <prvc_share/prvc_context.hpp>
 #include <prvc_share/prvc_encdata.hpp>
+#include <prvc_share/prvc_encparam.hpp>
+#include <prvc_share/prvc_plaindata.hpp>
 #include <prvc_eval/prvc_eval_callback_param.hpp>
 #include <prvc_eval/prvc_eval_client.hpp>
 #include <prvc_eval/prvc_eval_state.hpp>
@@ -45,15 +47,30 @@ DEFUN_DATA(CallbackFunctionEncInput)
                    state.current_state_str().c_str());
 
     DEF_CDATA_ON_EACH(prvc_eval::CallbackParam);
+    DEF_CDATA_ON_ALL(prvc_eval::CommonCallbackParam);
     
     stdsc::BufferStream buffstream(buffer);
     std::iostream stream(&buffstream);
     
-    auto& client = cdata_e->get_client();
+    auto& client  = cdata_e->get_client();
+    auto& compara = cdata_a->comparator_;
     
     prvc_share::EncData encdata(client.context());
+    prvc_share::PlainData<prvc_share::EncParam> pladata;
+    
     encdata.load_from_stream(stream);
+    pladata.load_from_stream(stream);
+    
     encdata.save_to_file("encinput.txt");
+
+    compara->push(encdata);
+    printf("compara: is_comparable:%d\n", compara->is_comparable());
+    compara->push(encdata);
+    printf("compara: is_comparable:%d\n", compara->is_comparable());
+    compara->compare();
+
+    const auto& param = pladata.data();
+    printf("num_chunk: %lu\n", param.num_chunk);
 }
 
 } /* namespace prvc_eval */
