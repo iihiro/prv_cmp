@@ -44,7 +44,9 @@ enum Event_t : uint64_t
     kEventNil            = 0,
     kEventPubkeyRequest  = 1,
     kEventContextRequest = 2,
-    kEventDecryptRequest = 3,
+    kEventEMKRequest     = 3,
+    kEventEAKRequest     = 4,
+    kEventDecryptRequest = 5,
 };
 
 /**

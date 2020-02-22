@@ -32,6 +32,14 @@ namespace prvc_share
  */
 struct Context
 {
+    enum Kind_t
+    {
+        kKindBody = 0,
+        kKindEMK,
+        kKindEAK,
+        num_of_Kind,
+    };
+    
     Context(void);
     ~Context(void) = default;
 
@@ -41,13 +49,13 @@ struct Context
                   const std::size_t rel_window = DefaultRelWindow,
                   const std::size_t dcrt_bits  = DefaultDcrtBits);
     
-    void save_to_stream(std::ostream& os) const;
-    void load_from_stream(std::istream& is);
+    void save_to_stream(std::ostream& os, const Kind_t kind=kKindBody) const;
+    void load_from_stream(std::istream& is, const Kind_t kind=kKindBody);
 
-    void save_to_file(const std::string& filepath) const;
-    void load_from_file(const std::string& filepath);
+    void save_to_file(const std::string& filepath, const Kind_t kind=kKindBody) const;
+    void load_from_file(const std::string& filepath, const Kind_t kind=kKindBody);
 
-    const FHEcontext& get(void) const;
+    const FHEContext& get(void) const;
 
 private:
     static constexpr std::size_t DefaultMulDepth  = 4;

@@ -33,12 +33,16 @@
 static constexpr const char* CONTEXT_FILENAME = "context.txt";
 static constexpr const char* PUBKEY_FILENAME  = "pubkey.txt";
 static constexpr const char* SECKEY_FILENAME  = "seckey.txt";
+static constexpr const char* EMK_FILENAME     = "emk.txt";
+static constexpr const char* EAK_FILENAME     = "eak.txt";
 
 struct Param
 {
     std::string pubkey_filename  = PUBKEY_FILENAME;
     std::string seckey_filename  = SECKEY_FILENAME;
     std::string context_filename = CONTEXT_FILENAME;
+    std::string emk_filename     = EMK_FILENAME;
+    std::string eak_filename     = EAK_FILENAME;
     std::string config_filename; // set empty if file is specified
     bool is_generate_securekey   = false;
 };
@@ -47,7 +51,7 @@ void init(Param& param, int argc, char* argv[])
 {
     int opt;
     opterr = 0;
-    while ((opt = getopt(argc, argv, "p:s:c:t:gh")) != -1)
+    while ((opt = getopt(argc, argv, "p:s:c:e:a:t:gh")) != -1)
     {
         switch (opt)
         {
@@ -60,6 +64,12 @@ void init(Param& param, int argc, char* argv[])
             case 'c':
                 param.context_filename = optarg;
                 break;
+            case 'e':
+                param.emk_filename = optarg;
+                break;
+            case 'a':
+                param.eak_filename = optarg;
+                break;
             case 't':
                 param.config_filename = optarg;
                 break;
@@ -69,7 +79,9 @@ void init(Param& param, int argc, char* argv[])
             case 'h':
             default:
                 printf(
-                  "Usage: %s [-p pubkey_filename] [-s seckey_filename] [-c context_filename] [-t conifg_filename] [-g]\n",
+                  "Usage: %s [-p pubkey_filename] [-s seckey_filename]"
+                  " [-c context_filename] [-e emk_filename] [-a eak_filename]"
+                  " [-t conifg_filename] [-g]\n",
                   argv[0]);
                 exit(1);
         }
@@ -90,6 +102,14 @@ start_srv_async(prvc_dec::CallbackParam& cb_param)
         std::shared_ptr<stdsc::CallbackFunction> cb_context(
             new prvc_dec::CallbackFunctionContextRequest());
         callback.set(prvc_share::kControlCodeDownloadContext, cb_context);
+
+        std::shared_ptr<stdsc::CallbackFunction> cb_emk(
+            new prvc_dec::CallbackFunctionEMKRequest());
+        callback.set(prvc_share::kControlCodeDownloadEMK, cb_emk);
+
+        std::shared_ptr<stdsc::CallbackFunction> cb_eak(
+            new prvc_dec::CallbackFunctionEAKRequest());
+        callback.set(prvc_share::kControlCodeDownloadEAK, cb_eak);
         
         std::shared_ptr<stdsc::CallbackFunction> cb_end(
             new prvc_dec::CallbackFunctionDecryptRequest());
@@ -114,12 +134,16 @@ void exec(const Param& param)
         skm_ptr = std::make_shared<prvc_share::SecureKeyFileManager>(
             param.pubkey_filename,
             param.seckey_filename,
-            param.context_filename);
+            param.context_filename,
+            param.emk_filename,
+            param.eak_filename);
     } else {
         skm_ptr = std::make_shared<prvc_share::SecureKeyFileManager>(
             param.pubkey_filename,
             param.seckey_filename,
             param.context_filename,
+            param.emk_filename,
+            param.eak_filename,
             param.config_filename);
     }
 

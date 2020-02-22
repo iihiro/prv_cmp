@@ -33,13 +33,17 @@ enum ControlCode_t : uint64_t
     /* Code for Data packet: 0x0401-0x04FF */
     kControlCodeDataPubkey         = 0x0401,
     kControlCodeDataContext        = 0x0402,
-    kControlCodeDataEncInput       = 0x0403,
-    kControlCodeDataEncResult      = 0x0404,
-    kControlCodeDataDecryptRequest = 0x0405,
+    kControlCodeDataEMK            = 0x0403,
+    kControlCodeDataEAK            = 0x0404,
+    kControlCodeDataEncInput       = 0x0405,
+    kControlCodeDataEncResult      = 0x0406,
+    kControlCodeDataDecryptRequest = 0x0407,
     
     /* Code for Download packet: 0x801-0x8FF */
     kControlCodeDownloadPubkey     = 0x0801,
     kControlCodeDownloadContext    = 0x0802,
+    kControlCodeDownloadEMK        = 0x0803,
+    kControlCodeDownloadEAK        = 0x0804,
 
     /* Code for UpDownload packet: 0x1000-0x10FF */
     kControlCodeGroupUpDownload    = 0x1000,

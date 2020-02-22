@@ -35,6 +35,16 @@ DECLARE_DOWNLOAD_CLASS(CallbackFunctionPubkeyRequest);
 DECLARE_DOWNLOAD_CLASS(CallbackFunctionContextRequest);
 
 /**
+ * @brief Provides callback function in receiving emk request.
+ */
+DECLARE_DOWNLOAD_CLASS(CallbackFunctionEMKRequest);
+
+/**
+ * @brief Provides callback function in receiving eak request.
+ */
+DECLARE_DOWNLOAD_CLASS(CallbackFunctionEAKRequest);
+
+/**
  * @brief Provides callback function in receiving decrypt request.
  */
 DECLARE_DATA_CLASS(CallbackFunctionDecryptRequest);

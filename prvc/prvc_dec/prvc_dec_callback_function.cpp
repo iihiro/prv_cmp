@@ -71,6 +71,44 @@ DEFUN_DOWNLOAD(CallbackFunctionContextRequest)
     state.set(kEventContextRequest);
 }
 
+// CallbackFunctionEMKRequest
+DEFUN_DOWNLOAD(CallbackFunctionEMKRequest)
+{
+    STDSC_LOG_INFO("Received emk request. (current state : %s)",
+                   state.current_state_str().c_str());
+
+    DEF_CDATA_ON_EACH(prvc_dec::CallbackParam);
+
+    auto  kind = prvc_share::SecureKeyFileManager::Kind_t::kKindEMK;
+    auto& skm  = *cdata_e->skm_ptr;
+    stdsc::Buffer context(skm.size(kind));
+    skm.data(kind, context.data());
+    STDSC_LOG_INFO("Sending emk.");
+    sock.send_packet(stdsc::make_data_packet(prvc_share::kControlCodeDataEMK,
+                                             skm.size(kind)));
+    sock.send_buffer(context);
+    state.set(kEventEMKRequest);
+}
+
+// CallbackFunctionEAKRequest
+DEFUN_DOWNLOAD(CallbackFunctionEAKRequest)
+{
+    STDSC_LOG_INFO("Received eak request. (current state : %s)",
+                   state.current_state_str().c_str());
+
+    DEF_CDATA_ON_EACH(prvc_dec::CallbackParam);
+
+    auto  kind = prvc_share::SecureKeyFileManager::Kind_t::kKindEAK;
+    auto& skm  = *cdata_e->skm_ptr;
+    stdsc::Buffer context(skm.size(kind));
+    skm.data(kind, context.data());
+    STDSC_LOG_INFO("Sending eak.");
+    sock.send_packet(stdsc::make_data_packet(prvc_share::kControlCodeDataEAK,
+                                             skm.size(kind)));
+    sock.send_buffer(context);
+    state.set(kEventEAKRequest);
+}
+
 // CallbackFunctionDecryptRequest
 DEFUN_DATA(CallbackFunctionDecryptRequest)
 {

@@ -60,7 +60,18 @@ DEFUN_DATA(CallbackFunctionEncInput)
     
     encdata.load_from_stream(stream);
     pladata.load_from_stream(stream);
+
+    compara->push(encdata);
+
+    if (compara->is_comparable()) {
+        const auto& param = pladata.data();
+        std::vector<prvc_share::Ctxt> v_cres(param.num_chunk);
+
+        compara->compare(client.context().get(), param.num_chunk, v_cres);
+        printf("v_cres: %lu\n", v_cres.size());
+    }
     
+#if 0 //test
     encdata.save_to_file("encinput.txt");
 
     compara->push(encdata);
@@ -71,6 +82,7 @@ DEFUN_DATA(CallbackFunctionEncInput)
 
     const auto& param = pladata.data();
     printf("num_chunk: %lu\n", param.num_chunk);
+#endif
 }
 
 } /* namespace prvc_eval */

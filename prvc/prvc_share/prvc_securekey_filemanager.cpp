@@ -41,6 +41,8 @@ struct SecureKeyFileManager::Impl
     Impl(const std::string& pubkey_filename,
          const std::string& seckey_filename,
          const std::string& context_filename,
+         const std::string& emk_filename,
+         const std::string& eak_filename,
          const std::size_t mul_depth,
          const std::size_t logN,
          const std::size_t rel_window,
@@ -53,16 +55,22 @@ struct SecureKeyFileManager::Impl
         filenames_.emplace(kKindPubKey,  pubkey_filename);
         filenames_.emplace(kKindSecKey,  seckey_filename);
         filenames_.emplace(kKindContext, context_filename);
+        filenames_.emplace(kKindEMK,     emk_filename);
+        filenames_.emplace(kKindEAK,     eak_filename);
     }
     
     Impl(const std::string& pubkey_filename,
          const std::string& seckey_filename,
          const std::string& context_filename,
+         const std::string& emk_filename,
+         const std::string& eak_filename,
          const std::string& config_filename)
     {
         filenames_.emplace(kKindPubKey,  pubkey_filename);
         filenames_.emplace(kKindSecKey,  seckey_filename);
         filenames_.emplace(kKindContext, context_filename);
+        filenames_.emplace(kKindEMK,     emk_filename);
+        filenames_.emplace(kKindEAK,     eak_filename);
     }
     
     ~Impl(void) = default;
@@ -76,7 +84,7 @@ struct SecureKeyFileManager::Impl
         lbcrypto::PlaintextModulus ptm = (1 << logN_) - 1;
         double sigma = DefaultSigma;
         
-        FHEcontext cc;
+        FHEContext cc;
         cc = lbcrypto::CryptoContextFactory<PolyType>::genCryptoContextBFVrns(
             ptm, root_hermit, sigma, 0, mul_depth_, 0, OPTIMIZED, 2, rel_window_, dcrt_bits_);
         cc->Enable(ENCRYPTION);
@@ -98,7 +106,36 @@ struct SecureKeyFileManager::Impl
         eval_automorph_ks = cc->EvalAutomorphismKeyGen(kp.secretKey, index_list);
         cc->InsertEvalAutomorphismKey(eval_automorph_ks);
 
-        lbcrypto::Serialized ctxK, pubK, privK, emkK;
+#if 1
+        lbcrypto::Serialized ser_ctx, ser_emk, ser_eak, ser_pub, ser_pri;
+        
+        std::ofstream ofs_ctx(filename(kKindContext), std::ios::binary | std::ios::trunc);
+        STDSC_THROW_FILE_IF_CHECK(cc->Serialize(&ser_ctx), "Error serializing context");
+        STDSC_THROW_FILE_IF_CHECK(lbcrypto::SerializableHelper::SerializationToStream(ser_ctx, ofs_ctx),
+                                  "Error writing serialized context to file");
+
+        std::ofstream ofs_emk(filename(kKindEMK), std::ios::binary | std::ios::trunc);
+        STDSC_THROW_FILE_IF_CHECK(cc->SerializeEvalMultKey(&ser_emk), "Error serializing eval multi key");
+        STDSC_THROW_FILE_IF_CHECK(lbcrypto::SerializableHelper::SerializationToStream(ser_emk, ofs_emk),
+                                  "Error writing serialized eval multi key to file");
+        
+        std::ofstream ofs_eak(filename(kKindEAK), std::ios::binary | std::ios::trunc);
+        STDSC_THROW_FILE_IF_CHECK(cc->SerializeEvalAutomorphismKey(&ser_eak), "Error serializing eval automorphism key");
+        STDSC_THROW_FILE_IF_CHECK(lbcrypto::SerializableHelper::SerializationToStream(ser_eak, ofs_eak),
+                                  "Error writing serialized eval automorphism key to file");
+        
+        std::ofstream ofs_pub(filename(kKindPubKey), std::ios::binary | std::ios::trunc);
+        STDSC_THROW_FILE_IF_CHECK(kp.publicKey->Serialize(&ser_pub), "Error serializing public key");
+        STDSC_THROW_FILE_IF_CHECK(lbcrypto::SerializableHelper::SerializationToStream(ser_pub, ofs_pub),
+                                  "Error writing serialized public key to file");
+
+        std::ofstream ofs_pri(filename(kKindSecKey), std::ios::binary | std::ios::trunc);
+		STDSC_THROW_FILE_IF_CHECK(kp.secretKey->Serialize(&ser_pri), "Error serializing private key");
+        STDSC_THROW_FILE_IF_CHECK(lbcrypto::SerializableHelper::SerializationToStream(ser_pri, ofs_pri),
+                                  "Error writing serialized private key to file");
+
+#else
+        lbcrypto::Serialized ctxK, pubK, privK;
         
         if( cc->Serialize(&ctxK) ) {
             std::ofstream ofs(filename(kKindContext), std::ios::binary | std::ios::trunc);
@@ -132,6 +169,7 @@ struct SecureKeyFileManager::Impl
 			std::cerr << "Error serializing private key" << std::endl;
 			return;
 		}
+#endif
     }
     
     size_t size(const Kind_t kind) const
@@ -180,11 +218,14 @@ private:
 SecureKeyFileManager::SecureKeyFileManager(const std::string& pubkey_filename,
                                            const std::string& seckey_filename,
                                            const std::string& context_filename,
+                                           const std::string& emk_filename,
+                                           const std::string& eak_filename,
                                            const std::size_t mul_depth,
                                            const std::size_t logN,
                                            const std::size_t rel_window,
                                            const std::size_t dcrt_bits)
     : pimpl_(new Impl(pubkey_filename, seckey_filename, context_filename,
+                      emk_filename, eak_filename,
                       mul_depth, logN, rel_window, dcrt_bits))
 {
 }
@@ -192,8 +233,11 @@ SecureKeyFileManager::SecureKeyFileManager(const std::string& pubkey_filename,
 SecureKeyFileManager::SecureKeyFileManager(const std::string& pubkey_filename,
                                            const std::string& seckey_filename,
                                            const std::string& context_filename,
+                                           const std::string& emk_filename,
+                                           const std::string& eak_filename,
                                            const std::string& config_filename)
     : pimpl_(new Impl(pubkey_filename, seckey_filename, context_filename,
+                      emk_filename, eak_filename,
                       config_filename))
 {
 }

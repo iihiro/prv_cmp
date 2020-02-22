@@ -10,7 +10,7 @@ namespace prvc_share
 
 struct PubKey::Impl
 {
-    Impl(const prvc_share::FHEcontext& context)
+    Impl(const prvc_share::FHEContext& context)
         : data_(new lbcrypto::LPPublicKeyImpl<prvc_share::PolyType>(context))
     {}
 
@@ -58,7 +58,7 @@ private:
     FHEPubKey data_;
 };
 
-PubKey::PubKey(const prvc_share::FHEcontext& context)
+PubKey::PubKey(const prvc_share::FHEContext& context)
     : pimpl_(new Impl(context))
 {}
 

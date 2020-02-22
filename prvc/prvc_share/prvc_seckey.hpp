@@ -32,7 +32,7 @@ namespace prvc_share
  */
 struct SecKey
 {
-    SecKey(const FHEcontext& context);
+    SecKey(const FHEContext& context);
     ~SecKey(void) = default;
 
     void save_to_stream(std::ostream& os) const;

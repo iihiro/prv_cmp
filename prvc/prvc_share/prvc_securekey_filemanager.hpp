@@ -41,6 +41,8 @@ public:
         kKindPubKey  = 0,
         kKindSecKey  = 1,
         kKindContext = 2,
+        kKindEMK     = 3, // Eval Multi Key
+        kKindEAK     = 4, // Eval Automorphism Key
         kNumOfKind,
     };
     
@@ -48,6 +50,8 @@ public:
     SecureKeyFileManager(const std::string& pubkey_filename,
                          const std::string& seckey_filename,
                          const std::string& contest_filename,
+                         const std::string& emk_filename,
+                         const std::string& eak_filename,
                          const std::size_t mul_depth  = DefaultMulDepth,
                          const std::size_t logN       = DefaultLogN,
                          const std::size_t rel_window = DefaultRelWindow,
@@ -56,6 +60,8 @@ public:
     SecureKeyFileManager(const std::string& pubkey_filename,
                          const std::string& seckey_filename,
                          const std::string& contest_filename,
+                         const std::string& emk_filename,
+                         const std::string& eak_filename,
                          const std::string& config_filename);
     
     ~SecureKeyFileManager(void) = default;

@@ -58,7 +58,7 @@ struct DecClientBase::Impl
         client_.close();
     }
     
-    void get_pubkey(prvc_share::PubKey& pubkey, const char* filename)
+    void get_pubkey(prvc_share::PubKey& pubkey)
     {
         stdsc::Buffer buffer;
         client_.recv_data_blocking(prvc_share::kControlCodeDownloadPubkey, buffer);
@@ -68,7 +68,9 @@ struct DecClientBase::Impl
         pubkey.load_from_stream(stream);
     }
 
-    void get_context(prvc_share::Context& context, const char* filename)
+    void get_context(prvc_share::Context& context,
+                     const bool is_receive_emk,
+                     const bool is_receive_eak)
     {
         stdsc::Buffer buffer;
         client_.recv_data_blocking(prvc_share::kControlCodeDownloadContext, buffer);
@@ -76,6 +78,24 @@ struct DecClientBase::Impl
         stdsc::BufferStream buffstream(buffer);
         std::iostream stream(&buffstream);
         context.load_from_stream(stream);
+
+        if (is_receive_emk) {
+            stdsc::Buffer buffer;
+            client_.recv_data_blocking(prvc_share::kControlCodeDownloadEMK, buffer);
+
+            stdsc::BufferStream buffstream(buffer);
+            std::iostream stream(&buffstream);
+            context.load_from_stream(stream, Context::kKindEMK);
+        }
+
+        if (is_receive_eak) {
+            stdsc::Buffer buffer;
+            client_.recv_data_blocking(prvc_share::kControlCodeDownloadEAK, buffer);
+
+            stdsc::BufferStream buffstream(buffer);
+            std::iostream stream(&buffstream);
+            context.load_from_stream(stream, Context::kKindEAK);
+        }
     }
 
     stdsc::Client& client(void)
@@ -105,14 +125,16 @@ void DecClientBase::disconnect(void)
     pimpl_->disconnect();
 }
     
-void DecClientBase::get_pubkey(prvc_share::PubKey& pubkey, const char* filename)
+void DecClientBase::get_pubkey(prvc_share::PubKey& pubkey)
 {
-    pimpl_->get_pubkey(pubkey, filename);
+    pimpl_->get_pubkey(pubkey);
 }
 
-void DecClientBase::get_context(prvc_share::Context& context, const char* filename)
+void DecClientBase::get_context(prvc_share::Context& context,
+                                const bool is_receive_emk,
+                                const bool is_receive_eak)
 {
-    pimpl_->get_context(context, filename);
+    pimpl_->get_context(context, is_receive_emk, is_receive_eak);
 }
 
 stdsc::Client& DecClientBase::client(void)

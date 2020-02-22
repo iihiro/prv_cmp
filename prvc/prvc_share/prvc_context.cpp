@@ -48,28 +48,48 @@ struct Context::Impl
         data_->InsertEvalAutomorphismKey(eval_automorph_ks);
     }
     
-    void save_to_stream(std::ostream& os) const
+    void save_to_stream(std::ostream& os, const Kind_t kind) const
     {
+        STDSC_IF_CHECK(data_, "resource is empty");
+        
         lbcrypto::Serialized ser;
-        data_->Serialize(&ser);
+
+        if (kind == kKindEMK) {
+            data_->SerializeEvalMultKey(&ser);
+        } else if (kind == kKindEAK) {
+            data_->SerializeEvalAutomorphismKey(&ser);
+        } else {
+            data_->Serialize(&ser);
+        }
         lbcrypto::SerializableHelper::SerializationToStream(ser, os);
     }
     
-    void load_from_stream(std::istream& is)
+    void load_from_stream(std::istream& is, const Kind_t kind)
     {
         lbcrypto::Serialized ser;
-        lbcrypto::SerializableHelper::StreamToSerialization(is, &ser);
-        data_ = lbcrypto::CryptoContextFactory<PolyType>::DeserializeAndCreateContext(ser);
+
+        if (kind == kKindEMK) {
+            STDSC_IF_CHECK(data_, "resource is empty");
+            lbcrypto::SerializableHelper::StreamToSerialization(is, &ser);
+            data_->DeserializeEvalMultKey(ser);
+        } else if (kind == kKindEAK) {
+            STDSC_IF_CHECK(data_, "resource is empty");
+            lbcrypto::SerializableHelper::StreamToSerialization(is, &ser);
+            data_->DeserializeEvalAutomorphismKey(ser);
+        } else {
+            lbcrypto::SerializableHelper::StreamToSerialization(is, &ser);
+            data_ = lbcrypto::CryptoContextFactory<PolyType>::DeserializeAndCreateContext(ser);
+        }
     }
     
-    void save_to_file(const std::string& filepath) const
+    void save_to_file(const std::string& filepath, const Kind_t kind) const
     {
         std::ofstream ofs(filepath);
-        save_to_stream(ofs);
+        save_to_stream(ofs, kind);
         ofs.close();
     }
     
-    void load_from_file(const std::string& filepath)
+    void load_from_file(const std::string& filepath, const Kind_t kind)
     {
         if (!prvc_share::utility::file_exist(filepath)) {
             std::ostringstream oss;
@@ -77,17 +97,17 @@ struct Context::Impl
             STDSC_THROW_FILE(oss.str());
         }
         std::ifstream ifs(filepath, std::ios::binary);
-        load_from_stream(ifs);
+        load_from_stream(ifs, kind);
         ifs.close();
     }
 
-    const FHEcontext& get(void) const
+    const FHEContext& get(void) const
     {
         return data_;
     }
     
 private:
-    FHEcontext data_;
+    FHEContext data_;
 };
 
 Context::Context(void) : pimpl_(new Impl())
@@ -102,27 +122,27 @@ void Context::generate(FHEKeyPair& keypair,
     pimpl_->generate(keypair, mul_depth, logN, rel_window, dcrt_bits);
 }
 
-void Context::save_to_stream(std::ostream& os) const
+void Context::save_to_stream(std::ostream& os, const Kind_t kind) const
 {
-    pimpl_->save_to_stream(os);
+    pimpl_->save_to_stream(os, kind);
 }
 
-void Context::load_from_stream(std::istream& is)
+void Context::load_from_stream(std::istream& is, const Kind_t kind)
 {
-    pimpl_->load_from_stream(is);
+    pimpl_->load_from_stream(is, kind);
 }
 
-void Context::save_to_file(const std::string& filepath) const
+void Context::save_to_file(const std::string& filepath, const Kind_t kind) const
 {
-    pimpl_->save_to_file(filepath);
+    pimpl_->save_to_file(filepath, kind);
 }
     
-void Context::load_from_file(const std::string& filepath)
+void Context::load_from_file(const std::string& filepath, const Kind_t kind)
 {
-    pimpl_->load_from_file(filepath);
+    pimpl_->load_from_file(filepath, kind);
 }
 
-const FHEcontext& Context::get(void) const
+const FHEContext& Context::get(void) const
 {
     return pimpl_->get();
 }

@@ -19,7 +19,8 @@
 #define PRVC_EVAL_ENC_COMPARATOR_HPP
 
 #include <memory>
-#include <cstdbool>;
+#include <cstdbool>
+#include <prvc_share/prvc_enctype.hpp>
 
 namespace prvc_share
 {
@@ -41,7 +42,9 @@ public:
     void initialize(void);
     void push(const prvc_share::EncData& encdata);
     bool is_comparable(void) const;
-    void compare(void) const;
+    void compare(const prvc_share::FHEContext& context,
+                 const size_t num_chunk,
+                 std::vector<prvc_share::Ctxt> v_cres) const;
     
 private:
     struct Impl;

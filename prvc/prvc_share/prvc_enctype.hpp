@@ -12,7 +12,7 @@ namespace prvc_share
     using PolyType   = lbcrypto::DCRTPoly;
     using Ctxt       = lbcrypto::Ciphertext<PolyType>;
     using EvkAut     = shared_ptr<map<usint, lbcrypto::LPEvalKey<PolyType>>>;
-    using FHEcontext = lbcrypto::CryptoContext<PolyType>;
+    using FHEContext = lbcrypto::CryptoContext<PolyType>;
     using FHEPubKey  = lbcrypto::LPPublicKey<PolyType>;
     using FHESecKey  = lbcrypto::LPPrivateKey<PolyType>;
     using FHEKeyPair = lbcrypto::LPKeyPair<PolyType>;

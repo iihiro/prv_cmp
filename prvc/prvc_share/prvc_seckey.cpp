@@ -10,7 +10,7 @@ namespace prvc_share
 
 struct SecKey::Impl
 {
-    Impl(const prvc_share::FHEcontext& context)
+    Impl(const prvc_share::FHEContext& context)
     // 以下を有効にしてビルドすると、以下のエラーが出る問題を解決できていない
     // -----
     //   [ 97%] Linking CXX executable dec
@@ -67,7 +67,7 @@ private:
     FHESecKey data_;
 };
 
-SecKey::SecKey(const prvc_share::FHEcontext& context)
+SecKey::SecKey(const prvc_share::FHEContext& context)
     : pimpl_(new Impl(context))
 {}
 

@@ -32,16 +32,20 @@ static constexpr const char* PUBKEY_FILENAME  = "pubkey.txt";
 struct Option
 {
     uint64_t input_value;
+    bool is_neg_mononical_coef = false;
 };
 
 void init(Option& option, int argc, char* argv[])
 {
     int opt;
     opterr = 0;
-    while ((opt = getopt(argc, argv, "h")) != -1)
+    while ((opt = getopt(argc, argv, "t:h")) != -1)
     {
         switch (opt)
         {
+            case 't':
+                option.is_neg_mononical_coef = std::stol(optarg) == 0 ? false : true;
+                break;
             case 'h':
             default:
                 PRINT_USAGE();
@@ -61,7 +65,9 @@ void exec(Option& option)
 {
     const char* host = "localhost";
 
-    prvc_enc::Encryptor enc(host, PORT_DEC_SRV, host, PORT_EVAL_SRV, false);
+    prvc_enc::Encryptor enc(host, PORT_DEC_SRV,
+                            host, PORT_EVAL_SRV,
+                            option.is_neg_mononical_coef);
     enc.compute(option.input_value);
 }
 

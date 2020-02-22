@@ -46,7 +46,6 @@ public:
                  const uint32_t timeout_sec = PRVC_TIMEOUT_SEC);
     void disconnect();
     
-    //void send_encdata(const prvc_share::EncData& encdata);
     void send_input(const prvc_share::EncData& encdata,
                     const prvc_share::PlainData<prvc_share::EncParam>& plaindata);
 

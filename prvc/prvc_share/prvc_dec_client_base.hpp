@@ -46,11 +46,11 @@ public:
                  const uint32_t timeout_sec = PRVC_TIMEOUT_SEC);
     void disconnect();
     
-    void get_pubkey(prvc_share::PubKey& pubkey,
-                    const char* filename = "pubkey.txt");
+    void get_pubkey(prvc_share::PubKey& pubkey);
 
     void get_context(prvc_share::Context& context,
-                     const char* filename = "context.txt");
+                     const bool is_receive_emk=false,
+                     const bool is_receive_eak=false);
 
 protected:
     stdsc::Client& client(void);

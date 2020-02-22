@@ -59,17 +59,6 @@ struct EvalClient::Impl
     {
         client_.close();
     }
-    
-    //void send_encdata(const prvc_share::EncData& encdata)
-    //{
-    //    stdsc::BufferStream buffstream(encdata.stream_size());
-    //    std::iostream stream(&buffstream);
-    //    encdata.save_to_stream(stream);
-    //
-    //    STDSC_LOG_INFO("Sending encrypted input.");
-    //    stdsc::Buffer* buffer = &buffstream;
-    //    client_.send_data_blocking(prvc_share::kControlCodeDataEncInput, *buffer);
-    //}
 
     void send_input(const prvc_share::EncData& encdata,
                     const prvc_share::PlainData<prvc_share::EncParam>& plaindata)
@@ -107,11 +96,6 @@ void EvalClient::disconnect(void)
 {
     pimpl_->disconnect();
 }
-    
-//void EvalClient::send_encdata(const prvc_share::EncData& encdata)
-//{
-//    pimpl_->send_encdata(encdata);
-//}
 
 void EvalClient::send_input(const prvc_share::EncData& encdata,
                             const prvc_share::PlainData<prvc_share::EncParam>& plaindata)

@@ -32,7 +32,7 @@ namespace prvc_share
  */
 struct PubKey
 {
-    PubKey(const FHEcontext& context);
+    PubKey(const FHEContext& context);
     ~PubKey(void) = default;
 
     void save_to_stream(std::ostream& os) const;

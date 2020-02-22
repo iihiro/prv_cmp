@@ -50,22 +50,17 @@ struct Client::Impl
 
         dec_client_->connect(retry_interval_usec_, timeout_sec_);
 
-        context_ = std::make_shared<prvc_share::Context>();
-        dec_client_->get_context(*context_);
+        bool is_receive_emk = true;
+        bool is_receive_eak = true;
         
-        //pubkey_ = std::make_shared<prvc_share::PubKey>(context_->get());
-        //dec_client_->get_pubkey(*pubkey_);
+        context_ = std::make_shared<prvc_share::Context>();
+        dec_client_->get_context(*context_, is_receive_emk, is_receive_eak);
     }
 
     ~Impl(void)
     {
         dec_client_->disconnect();
     }
-
-    //const prvc_share::PubKey& pubkey(void) const
-    //{
-    //    return *pubkey_;
-    //}
 
     const prvc_share::Context& context(void) const
     {
