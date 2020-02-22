@@ -19,6 +19,12 @@
 #define PRVC_SECUREKEY_FILEMANAGER
 
 #include <memory>
+#include <prvc_share/prvc_enctype.hpp>
+
+namespace lbcrypto
+{
+    template <class T> class LPKeyPair;
+}
 
 namespace prvc_share
 {
@@ -75,6 +81,8 @@ public:
     bool is_exist(const Kind_t kind) const;
     
     std::string filename(const Kind_t kind) const;
+
+    const lbcrypto::LPKeyPair<PolyType>& keypair(void) const;
 
 private:
     struct Impl;

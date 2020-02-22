@@ -44,7 +44,8 @@ public:
     bool is_comparable(void) const;
     void compare(const prvc_share::FHEContext& context,
                  const size_t num_chunk,
-                 std::vector<prvc_share::Ctxt> v_cres) const;
+                 std::vector<prvc_share::Ctxt>& v_c_cmp_res,
+                 prvc_share::Ctxt& c_cmp_res) const;
     
 private:
     struct Impl;

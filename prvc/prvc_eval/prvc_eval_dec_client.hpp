@@ -22,6 +22,11 @@
 #include <string>
 #include <prvc_share/prvc_dec_client_base.hpp>
 
+namespace prvc_share
+{
+class EncData;
+}
+
 namespace prvc_eval
 {
     
@@ -36,6 +41,9 @@ public:
     DecClient(const char* host, const char* port);
     virtual ~DecClient(void) = default;
 
+    void send_result(const prvc_share::EncData& vcmpres,
+                     const prvc_share::EncData& cmpres);
+    
 private:
     struct Impl;
     std::shared_ptr<Impl> pimpl_;

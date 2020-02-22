@@ -26,6 +26,8 @@
 #include <stdsc/stdsc_log.hpp>
 #include <prvc_share/prvc_packet.hpp>
 #include <prvc_share/prvc_securekey_filemanager.hpp>
+#include <prvc_share/prvc_context.hpp>
+#include <prvc_share/prvc_encdata.hpp>
 #include <prvc_dec/prvc_dec_callback_function.hpp>
 #include <prvc_dec/prvc_dec_callback_param.hpp>
 #include <prvc_dec/prvc_dec_state.hpp>
@@ -33,6 +35,15 @@
 namespace prvc_dec
 {
 
+static int64_t DecryptAndGetConstantTerm(const prvc_share::FHEContext& cc,
+                                         const prvc_share::FHESecKey& seckey,
+                                         const prvc_share::Ctxt& ctxt)
+{
+    lbcrypto::Plaintext poly_res;
+    cc->Decrypt(seckey, ctxt, &poly_res);
+    return poly_res->GetCoefPackedValue().at(0);
+}
+    
 // CallbackFunctionPubkeyRequest
 DEFUN_DOWNLOAD(CallbackFunctionPubkeyRequest)
 {
@@ -110,10 +121,40 @@ DEFUN_DOWNLOAD(CallbackFunctionEAKRequest)
 }
 
 // CallbackFunctionDecryptRequest
-DEFUN_DATA(CallbackFunctionDecryptRequest)
+DEFUN_DATA(CallbackFunctionEncResult)
 {
-    STDSC_LOG_INFO("Received decrypt request. (current state : %s)",
+    STDSC_LOG_INFO("Received enc result. (current state : %s)",
                    state.current_state_str().c_str());
+
+    DEF_CDATA_ON_EACH(prvc_dec::CallbackParam);
+
+    auto& skm = *cdata_e->skm_ptr;
+    
+    auto& context = *cdata_e->context_ptr;
+
+    stdsc::BufferStream buffstream(buffer);
+    std::iostream stream(&buffstream);
+
+    prvc_share::EncData vcmpres(context);
+    prvc_share::EncData cmpres(context);
+
+    vcmpres.load_from_stream(stream);
+    cmpres.load_from_stream(stream);
+
+    const auto& v_c_cmp_res = vcmpres.vdata();
+    const auto& c_cmp_res   = cmpres.data();
+
+    const auto& cc = context.get();
+
+    auto& sk = skm.keypair().secretKey;
+    
+    for (size_t i=0; i<v_c_cmp_res.size(); ++i) {
+        const auto& ctxt = v_c_cmp_res[i];
+        int64_t dec_constant = DecryptAndGetConstantTerm(cc, sk, ctxt);
+        cout << "Comparison Result on " << i << "-th chunck: " << dec_constant << endl;
+    }
+    int64_t dec_constant = DecryptAndGetConstantTerm(cc, sk, c_cmp_res);
+    cout << "Overall Comparison Result (x<=y)?: " << dec_constant << endl;
 }
 
 } /* namespace prvc_dec */

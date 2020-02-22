@@ -26,6 +26,7 @@ namespace prvc_share
     class SecureKeyFileManager;
     class Context;
     class PubKey;
+    class SecKey;
 }
 
 namespace prvc_dec
@@ -41,7 +42,8 @@ struct CallbackParam
 
     std::shared_ptr<prvc_share::SecureKeyFileManager> skm_ptr;
     std::shared_ptr<prvc_share::Context> context_ptr;
-    std::shared_ptr<prvc_share::PubKey>  pubkey_ptr;
+    //std::shared_ptr<prvc_share::PubKey>  pubkey_ptr;
+    //std::shared_ptr<prvc_share::SecKey>  seckey_ptr;
 };
 
 } /* namespace prvc_dec */

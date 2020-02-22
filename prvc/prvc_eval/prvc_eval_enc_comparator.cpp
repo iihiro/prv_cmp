@@ -67,11 +67,16 @@ static void Comparison(const prvc_share::FHEContext& cc,
                        const size_t num_chunk,
                        const vector<prvc_share::Ctxt>& v_ca,
                        const vector<prvc_share::Ctxt>& v_cb,
+                       vector<prvc_share::Ctxt>& v_c_equ_res,
+                       vector<prvc_share::Ctxt>& v_c_nonequ_res,
                        vector<prvc_share::Ctxt>& v_cres)
 {
     vector<prvc_share::Ctxt> ca_times_cbs(num_chunk);
-    vector<prvc_share::Ctxt> v_c_equ_res(num_chunk - 1);
-    vector<prvc_share::Ctxt> v_c_nonequ_res(num_chunk - 1);
+    //vector<prvc_share::Ctxt> v_c_equ_res(num_chunk - 1);
+    //vector<prvc_share::Ctxt> v_c_nonequ_res(num_chunk - 1);
+
+    v_c_equ_res.resize(num_chunk - 1);
+    v_c_nonequ_res.resize(num_chunk - 1);
 
     auto N = cc->GetCryptoParameters()->GetElementParams()->GetCyclotomicOrder() / 2;
     auto t = cc->GetCryptoParameters()->GetPlaintextModulus();
@@ -123,6 +128,68 @@ static void Comparison(const prvc_share::FHEContext& cc,
     }
 }
 
+static prvc_share::Ctxt EvalMultMany(const prvc_share::FHEContext& cc,
+                                     std::vector<prvc_share::Ctxt>& c_vec)
+{
+    std::size_t v_len = c_vec.size();
+    std::vector<prvc_share::Ctxt> c_tmp_vec(2 * v_len - 1);
+    size_t itr = 0;
+    for(size_t i = 0; i < v_len; ++i) {
+        c_tmp_vec[i] = c_vec[itr++];
+    }
+
+    size_t result_index = v_len;
+    for(size_t i = 0, e = c_tmp_vec.size(); i < e - 1; i = i + 2) {
+        c_tmp_vec[result_index++] = cc->EvalMult(c_tmp_vec[i], c_tmp_vec[i + 1]);
+    }
+    return c_tmp_vec.back();
+}
+
+static void EvalAddMany(const prvc_share::FHEContext& cc,
+                        const std::vector<prvc_share::Ctxt>& c_vec,
+                        prvc_share::Ctxt& c0)
+{
+    size_t v_len = c_vec.size();
+    size_t num_nodes = 2 * v_len - 1;
+    std::vector<prvc_share::Ctxt> c_tree_vec(num_nodes);
+    size_t itr = 0;
+    for(size_t i = 0; i < v_len; ++i) {
+        c_tree_vec[i] = c_vec[itr++];
+    }
+    size_t result_index = v_len;
+    for(size_t i = 0, e = c_tree_vec.size(); i < e - 1; i = i + 2) {
+        c_tree_vec[result_index++] = cc->EvalAdd(c_tree_vec[i], c_tree_vec[i + 1]);
+    }
+    c0 = c_tree_vec.back();
+}
+
+static void GreaterThanUnroll(const prvc_share::FHEContext& cc,
+                              const size_t num_chunk,
+                              const std::vector<prvc_share::Ctxt>& v_c_equ_res,
+                              const vector<prvc_share::Ctxt>& v_c_nonequ_res,
+                              const std::vector<prvc_share::Ctxt>& c_gt_res,
+                              prvc_share::Ctxt& c_res)
+{
+    std::vector<prvc_share::Ctxt> v_add(num_chunk);
+    size_t itr_cnt = num_chunk - 1;
+    v_add[0] = cc->EvalMult(c_gt_res[0], v_c_nonequ_res[0]);
+    for (size_t i = 1; i != itr_cnt; ++i) {
+        std::vector<prvc_share::Ctxt> v_single_column(i + 2);
+        v_single_column[0] = c_gt_res[i];
+        v_single_column[1] = v_c_nonequ_res[i];
+        for (size_t j = 0; j < i; ++j) {
+            v_single_column[j + 2] = v_c_equ_res[j];
+        }
+        v_add[i] = EvalMultMany(cc, v_single_column);
+    }
+    std::vector<prvc_share::Ctxt> v_last_column(num_chunk);
+    v_last_column[0] = c_gt_res[num_chunk - 1];
+    for (size_t j = 1; j < num_chunk; ++j) {
+        v_last_column[j] = v_c_equ_res[j - 1];
+    }
+    v_add[num_chunk - 1] = EvalMultMany(cc, v_last_column);
+    EvalAddMany(cc, v_add, c_res);
+}
     
 struct EncComparator::Impl
 {
@@ -149,14 +216,26 @@ struct EncComparator::Impl
 
     void compare(const prvc_share::FHEContext& context,
                  const size_t num_chunk,
-                 std::vector<prvc_share::Ctxt> v_cres) const
+                 std::vector<prvc_share::Ctxt>& v_c_cmp_res,
+                 prvc_share::Ctxt& c_cmp_res) const
     {
         STDSC_IF_CHECK(is_comparable(), "data is too few");
         
         const auto& c_x_chunks = vencdata_.at(0).vdata();
         const auto& c_y_chunks = vencdata_.at(1).vdata();
 
-        Comparison(context, num_chunk, c_x_chunks, c_y_chunks, v_cres);
+        vector<prvc_share::Ctxt> v_c_equ_res;
+        vector<prvc_share::Ctxt> v_c_nonequ_res;
+        Comparison(context, num_chunk, c_x_chunks, c_y_chunks,
+                   v_c_equ_res, v_c_nonequ_res, v_c_cmp_res);
+
+        if (num_chunk > 1) {
+            GreaterThanUnroll(context, num_chunk,
+                              v_c_equ_res,v_c_nonequ_res,
+                              v_c_cmp_res, c_cmp_res);
+        } else {
+            c_cmp_res = v_c_cmp_res[0];
+        }
     }
 
 private:
@@ -184,9 +263,10 @@ bool EncComparator::is_comparable(void) const
 
 void EncComparator::compare(const prvc_share::FHEContext& context,
                             const size_t num_chunk,
-                            std::vector<prvc_share::Ctxt> v_cres) const
+                            std::vector<prvc_share::Ctxt>& v_c_cmp_res,
+                            prvc_share::Ctxt& c_cmp_res) const
 {
-    pimpl_->compare(context, num_chunk, v_cres);
+    pimpl_->compare(context, num_chunk, v_c_cmp_res, c_cmp_res);
 }
 
 } /* namespace prvc_eval */

@@ -65,10 +65,13 @@ DEFUN_DATA(CallbackFunctionEncInput)
 
     if (compara->is_comparable()) {
         const auto& param = pladata.data();
-        std::vector<prvc_share::Ctxt> v_cres(param.num_chunk);
+        std::vector<prvc_share::Ctxt> v_c_cmp_res(param.num_chunk);
+        prvc_share::Ctxt c_cmp_res;
 
-        compara->compare(client.context().get(), param.num_chunk, v_cres);
-        printf("v_cres: %lu\n", v_cres.size());
+        compara->compare(client.context().get(), param.num_chunk,
+                         v_c_cmp_res, c_cmp_res);
+
+        client.send_result(v_c_cmp_res, c_cmp_res);
     }
     
 #if 0 //test

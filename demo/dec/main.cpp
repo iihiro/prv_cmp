@@ -112,8 +112,8 @@ start_srv_async(prvc_dec::CallbackParam& cb_param)
         callback.set(prvc_share::kControlCodeDownloadEAK, cb_eak);
         
         std::shared_ptr<stdsc::CallbackFunction> cb_end(
-            new prvc_dec::CallbackFunctionDecryptRequest());
-        callback.set(prvc_share::kControlCodeDataDecryptRequest, cb_end);
+            new prvc_dec::CallbackFunctionEncResult());
+        callback.set(prvc_share::kControlCodeDataEncResult, cb_end);
 
         callback.set_commondata(static_cast<void*>(&cb_param), sizeof(cb_param));
     }
@@ -165,8 +165,8 @@ void exec(const Param& param)
     cb_param.skm_ptr = skm_ptr;
     cb_param.context_ptr = std::make_shared<prvc_share::Context>();
     cb_param.context_ptr->load_from_file(param.pubkey_filename);
-    cb_param.pubkey_ptr = std::make_shared<prvc_share::PubKey>(cb_param.context_ptr->get());
-    cb_param.pubkey_ptr->load_from_file(param.pubkey_filename);
+    //cb_param.pubkey_ptr = std::make_shared<prvc_share::PubKey>(cb_param.context_ptr->get());
+    //cb_param.pubkey_ptr->load_from_file(param.pubkey_filename);
 
     auto server = start_srv_async(cb_param);
     server->wait();

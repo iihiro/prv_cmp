@@ -90,10 +90,10 @@ struct SecureKeyFileManager::Impl
         cc->Enable(ENCRYPTION);
         cc->Enable(SHE);
 
-        lbcrypto::LPKeyPair<PolyType> kp;
-        kp = cc->KeyGen();
-        cc->EvalMultKeysGen(kp.secretKey);
-        STDSC_THROW_FAILURE_IF_CHECK(kp.good(), "failed to generate key");
+        //lbcrypto::LPKeyPair<PolyType> kp;
+        kp_ = cc->KeyGen();
+        cc->EvalMultKeysGen(kp_.secretKey);
+        STDSC_THROW_FAILURE_IF_CHECK(kp_.good(), "failed to generate key");
         auto N = cc->GetCryptoParameters()->GetElementParams()->GetCyclotomicOrder() / 2;
         
         // Evalkey
@@ -103,7 +103,7 @@ struct SecureKeyFileManager::Impl
             index_list.push_back(i + 1);
         }
         index_list.push_back(2 * N - 1);
-        eval_automorph_ks = cc->EvalAutomorphismKeyGen(kp.secretKey, index_list);
+        eval_automorph_ks = cc->EvalAutomorphismKeyGen(kp_.secretKey, index_list);
         cc->InsertEvalAutomorphismKey(eval_automorph_ks);
 
 #if 1
@@ -125,12 +125,12 @@ struct SecureKeyFileManager::Impl
                                   "Error writing serialized eval automorphism key to file");
         
         std::ofstream ofs_pub(filename(kKindPubKey), std::ios::binary | std::ios::trunc);
-        STDSC_THROW_FILE_IF_CHECK(kp.publicKey->Serialize(&ser_pub), "Error serializing public key");
+        STDSC_THROW_FILE_IF_CHECK(kp_.publicKey->Serialize(&ser_pub), "Error serializing public key");
         STDSC_THROW_FILE_IF_CHECK(lbcrypto::SerializableHelper::SerializationToStream(ser_pub, ofs_pub),
                                   "Error writing serialized public key to file");
 
         std::ofstream ofs_pri(filename(kKindSecKey), std::ios::binary | std::ios::trunc);
-		STDSC_THROW_FILE_IF_CHECK(kp.secretKey->Serialize(&ser_pri), "Error serializing private key");
+		STDSC_THROW_FILE_IF_CHECK(kp_.secretKey->Serialize(&ser_pri), "Error serializing private key");
         STDSC_THROW_FILE_IF_CHECK(lbcrypto::SerializableHelper::SerializationToStream(ser_pri, ofs_pri),
                                   "Error writing serialized private key to file");
 
@@ -206,6 +206,11 @@ struct SecureKeyFileManager::Impl
         CHECK_KIND(kind);
         return filenames_.at(kind);
     }
+
+    const lbcrypto::LPKeyPair<PolyType>& keypair(void) const
+    {
+        return kp_;
+    }
     
 private:
     std::unordered_map<Kind_t, std::string> filenames_;
@@ -213,6 +218,7 @@ private:
     std::size_t logN_;
     std::size_t rel_window_;
     std::size_t dcrt_bits_;
+    lbcrypto::LPKeyPair<PolyType> kp_;
 };
 
 SecureKeyFileManager::SecureKeyFileManager(const std::string& pubkey_filename,
@@ -265,6 +271,11 @@ bool SecureKeyFileManager::is_exist(const Kind_t kind) const
 std::string SecureKeyFileManager::filename(const Kind_t kind) const
 {
     return pimpl_->filename(kind);
+}
+
+const lbcrypto::LPKeyPair<PolyType>& SecureKeyFileManager::keypair(void) const
+{
+    return pimpl_->keypair();
 }
 
 } /* namespace prvc_share */

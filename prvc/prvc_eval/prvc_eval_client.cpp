@@ -29,6 +29,7 @@
 #include <prvc_share/prvc_define.hpp>
 #include <prvc_share/prvc_pubkey.hpp>
 #include <prvc_share/prvc_context.hpp>
+#include <prvc_share/prvc_encdata.hpp>
 #include <prvc_eval/prvc_eval_dec_client.hpp>
 #include <prvc_eval/prvc_eval_client.hpp>
 
@@ -67,8 +68,18 @@ struct Client::Impl
         return *context_;
     }
 
-    void compute(void)
+    void send_result(const std::vector<prvc_share::Ctxt>& v_c_cmp_res,
+                     const prvc_share::Ctxt& c_cmp_res)
     {
+        prvc_share::EncData vcmpres(context());
+        prvc_share::EncData cmpres(context());
+
+        for (const auto& c : v_c_cmp_res) {
+            vcmpres.push(c);
+        }
+        cmpres.push(c_cmp_res);
+        
+        dec_client_->send_result(vcmpres, cmpres);
     }
 
 private:
@@ -76,7 +87,6 @@ private:
     const uint32_t retry_interval_usec_;
     const uint32_t timeout_sec_;
     std::shared_ptr<prvc_share::Context> context_;
-    //std::shared_ptr<prvc_share::PubKey> pubkey_;
 };
 
 Client::Client(const char* dec_host,
@@ -89,19 +99,15 @@ Client::Client(const char* dec_host,
 {
 }
 
-//const prvc_share::PubKey& Client::pubkey(void) const
-//{
-//    return pimpl_->pubkey();
-//}
-
 const prvc_share::Context& Client::context(void) const
 {
     return pimpl_->context();
 }
 
-void Client::compute(void)
+void Client::send_result(const std::vector<prvc_share::Ctxt>& v_c_cmp_res,
+                         const prvc_share::Ctxt& c_cmp_res)
 {
-    return pimpl_->compute();
+    pimpl_->send_result(v_c_cmp_res, c_cmp_res);
 }
 
 } /* namespace prvc_eval */

@@ -45,9 +45,9 @@ DECLARE_DOWNLOAD_CLASS(CallbackFunctionEMKRequest);
 DECLARE_DOWNLOAD_CLASS(CallbackFunctionEAKRequest);
 
 /**
- * @brief Provides callback function in receiving decrypt request.
+ * @brief Provides callback function in receiving enc result.
  */
-DECLARE_DATA_CLASS(CallbackFunctionDecryptRequest);
+DECLARE_DATA_CLASS(CallbackFunctionEncResult);
 
 } /* namespace prvc_dec */
 

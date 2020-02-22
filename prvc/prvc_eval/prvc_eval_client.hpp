@@ -19,7 +19,9 @@
 #define PRVC_EVAL_CLIENT_HPP
 
 #include <memory>
+#include <vector>
 #include <prvc_share/prvc_define.hpp>
+#include <prvc_share/prvc_enctype.hpp>
 
 namespace prvc_share
 {
@@ -45,8 +47,9 @@ public:
 
     const prvc_share::Context& context(void) const;
 
-    void compute(void);
-    
+    void send_result(const std::vector<prvc_share::Ctxt>& v_c_cmp_res,
+                     const prvc_share::Ctxt& c_cmp_res);
+
 private:
     struct Impl;
     std::shared_ptr<Impl> pimpl_;
