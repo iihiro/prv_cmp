@@ -46,7 +46,7 @@ void init(Option& option, int argc, char* argv[])
         {
             case 'h':
             default:
-                printf("Usage: %s [-i input_filename]\n", argv[0]);
+                printf("Usage: %s\n", argv[0]);
                 exit(1);
         }
     }

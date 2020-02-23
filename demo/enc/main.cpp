@@ -24,7 +24,7 @@
 #include <prvc_enc/prvc_enc_dec_client.hpp>
 #include <share/define.hpp>
 
-#define PRINT_USAGE() printf("Usage: %s <value>\n", argv[0])
+#define PRINT_USAGE() printf("Usage: %s [-t is_neg] <value>\n", argv[0])
 
 static constexpr const char* CONTEXT_FILENAME = "context.txt";
 static constexpr const char* PUBKEY_FILENAME  = "pubkey.txt";
