@@ -34,13 +34,14 @@ namespace prvc_share
  */
 class SecureKeyFileManager
 {
+public:
     static constexpr std::size_t DefaultMulDepth  = 4;
     static constexpr std::size_t DefaultLogN      = 13;
+    static constexpr std::size_t DefaultNumBit    = 30;
     static constexpr std::size_t DefaultDcrtBits  = 60;
     static constexpr std::size_t DefaultRelWindow = 0;
     static constexpr double      DefaultSigma     = 32;
 
-public:
     enum Kind_t : int32_t
     {
         kKindUnknown = -1,
@@ -63,13 +64,6 @@ public:
                          const std::size_t rel_window = DefaultRelWindow,
                          const std::size_t dcrt_bits  = DefaultDcrtBits);
 
-    SecureKeyFileManager(const std::string& pubkey_filename,
-                         const std::string& seckey_filename,
-                         const std::string& contest_filename,
-                         const std::string& emk_filename,
-                         const std::string& eak_filename,
-                         const std::string& config_filename);
-    
     ~SecureKeyFileManager(void) = default;
 
     void initialize(void);

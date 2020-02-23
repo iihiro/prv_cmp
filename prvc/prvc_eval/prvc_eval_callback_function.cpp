@@ -70,6 +70,7 @@ DEFUN_DATA(CallbackFunctionEncInput)
 
         compara->compare(client.context().get(), param.num_chunk,
                          v_c_cmp_res, c_cmp_res);
+        compara->initialize();
 
         client.send_result(v_c_cmp_res, c_cmp_res);
     }

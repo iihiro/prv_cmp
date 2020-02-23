@@ -28,6 +28,7 @@
 #include <prvc_share/prvc_securekey_filemanager.hpp>
 #include <prvc_share/prvc_context.hpp>
 #include <prvc_share/prvc_encdata.hpp>
+#include <prvc_share/prvc_plaindata.hpp>
 #include <prvc_dec/prvc_dec_callback_function.hpp>
 #include <prvc_dec/prvc_dec_callback_param.hpp>
 #include <prvc_dec/prvc_dec_state.hpp>
@@ -92,12 +93,12 @@ DEFUN_DOWNLOAD(CallbackFunctionEMKRequest)
 
     auto  kind = prvc_share::SecureKeyFileManager::Kind_t::kKindEMK;
     auto& skm  = *cdata_e->skm_ptr;
-    stdsc::Buffer context(skm.size(kind));
-    skm.data(kind, context.data());
+    stdsc::Buffer emk(skm.size(kind));
+    skm.data(kind, emk.data());
     STDSC_LOG_INFO("Sending emk.");
     sock.send_packet(stdsc::make_data_packet(prvc_share::kControlCodeDataEMK,
                                              skm.size(kind)));
-    sock.send_buffer(context);
+    sock.send_buffer(emk);
     state.set(kEventEMKRequest);
 }
 
@@ -111,13 +112,37 @@ DEFUN_DOWNLOAD(CallbackFunctionEAKRequest)
 
     auto  kind = prvc_share::SecureKeyFileManager::Kind_t::kKindEAK;
     auto& skm  = *cdata_e->skm_ptr;
-    stdsc::Buffer context(skm.size(kind));
-    skm.data(kind, context.data());
+    stdsc::Buffer eak(skm.size(kind));
+    skm.data(kind, eak.data());
     STDSC_LOG_INFO("Sending eak.");
     sock.send_packet(stdsc::make_data_packet(prvc_share::kControlCodeDataEAK,
                                              skm.size(kind)));
-    sock.send_buffer(context);
+    sock.send_buffer(eak);
     state.set(kEventEAKRequest);
+}
+
+// CallbackFunctionParamRequest
+DEFUN_DOWNLOAD(CallbackFunctionParamRequest)
+{
+    STDSC_LOG_INFO("Received param request. (current state : %s)",
+                   state.current_state_str().c_str());
+
+    DEF_CDATA_ON_EACH(prvc_dec::CallbackParam);
+
+    prvc_share::PlainData<prvc_share::DecParam> plaindata;
+    plaindata.push(cdata_e->param);
+
+    auto sz = plaindata.stream_size();
+    stdsc::BufferStream buffstream(sz);
+    std::iostream stream(&buffstream);
+
+    plaindata.save_to_stream(stream);
+
+    STDSC_LOG_INFO("Sending param.");
+    stdsc::Buffer* buffer = &buffstream;
+    sock.send_packet(stdsc::make_data_packet(prvc_share::kControlCodeDataDecParam, sz));
+    sock.send_buffer(*buffer);
+    state.set(kEventParamRequest);
 }
 
 // CallbackFunctionDecryptRequest
@@ -151,10 +176,12 @@ DEFUN_DATA(CallbackFunctionEncResult)
     for (size_t i=0; i<v_c_cmp_res.size(); ++i) {
         const auto& ctxt = v_c_cmp_res[i];
         int64_t dec_constant = DecryptAndGetConstantTerm(cc, sk, ctxt);
-        cout << "Comparison Result on " << i << "-th chunck: " << dec_constant << endl;
+        std::cout << "Comparison Result on "
+                  << i << "-th chunck: " << dec_constant << std::endl;
     }
     int64_t dec_constant = DecryptAndGetConstantTerm(cc, sk, c_cmp_res);
-    cout << "Overall Comparison Result (x<=y)?: " << dec_constant << endl;
+    std::cout << "Overall Comparison Result (x<=y)?: "
+              << dec_constant << std::endl;
 }
 
 } /* namespace prvc_dec */

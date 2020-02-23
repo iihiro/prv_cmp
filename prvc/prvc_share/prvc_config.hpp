@@ -15,46 +15,35 @@
  * limitations under the License.
  */
 
-#ifndef PRVC_DEC_SRV_HPP
-#define PRVC_DEC_SRV_HPP
+#ifndef PRVC_CONFIG_HPP
+#define PRVC_CONFIG_HPP
 
-#include <memory>
 #include <string>
-
-namespace stdsc
-{
-    class CallbackFunctionContainer;
-    class StateContext;
-}
+#include <memory>
 
 namespace prvc_share
 {
-    class SecureKeyFileManager;
-}
-
-namespace prvc_dec
-{
 
 /**
- * @brief Provides Decryptor server.
+ * @brief This class is used to hold the configuration data.
  */
-class DecServer
+struct Config
 {
-public:
-    DecServer(const char* port, stdsc::CallbackFunctionContainer& callback,
-              stdsc::StateContext& state,
-              prvc_share::SecureKeyFileManager& skm);
-    ~DecServer(void) = default;
+    Config(void);
+    ~Config(void) = default;
 
-    void start();
-    void stop();
-    void wait(void);
-
+    std::string get_value(const std::string& key) const;
+    bool is_exist_key(const std::string& key) const;
+    void load_from_file(const std::string& filename);
+    
 private:
     struct Impl;
     std::shared_ptr<Impl> pimpl_;
 };
 
-} /* namespace prvc_dec */
+template <class T>
+T config_get_value(const Config& config, const std::string& key);
 
-#endif /* PRVC_DEC_SRV_HPP */
+} /* namespace prvc_share */
+
+#endif /* PRVC_CONFIG_HPP */

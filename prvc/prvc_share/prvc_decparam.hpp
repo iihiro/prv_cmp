@@ -15,39 +15,31 @@
  * limitations under the License.
  */
 
-#ifndef PRVC_SECKEY_HPP
-#define PRVC_SECKEY_HPP
+#ifndef PRVC_DECPARAM_HPP
+#define PRVC_DECPARAM_HPP
 
 #include <iostream>
-#include <string>
-#include <memory>
-
-#include <prvc_share/prvc_enctype.hpp>
 
 namespace prvc_share
 {
 
 /**
- * @brief This class is used to hold the secret key.
+ * @brief This clas is used to hold the parameters to compute on encryptor.
  */
-struct SecKey
+struct DecParam
 {
-    SecKey(const FHEContext& context);
-    ~SecKey(void) = default;
-
-    void save_to_stream(std::ostream& os) const;
-    void load_from_stream(std::istream& is);
-
-    void save_to_file(const std::string& filepath) const;
-    void load_from_file(const std::string& filepath);
-
-    const prvc_share::FHESecKey& get(void) const;
-
-private:
-    struct Impl;
-    std::shared_ptr<Impl> pimpl_;
+    std::size_t mul_depth;
+    std::size_t logN;
+    std::size_t num_bit;
+    std::size_t dcrt_bits;
+    std::size_t rel_window;
+    double      sigma;
+    
 };
+
+std::ostream& operator<<(std::ostream& os, const DecParam& param);
+std::istream& operator>>(std::istream& is, DecParam& param);
 
 } /* namespace prvc_share */
 
-#endif /* PRVC_SECKEY_HPP */
+#endif /* PRVC_DECPARAM_HPP */

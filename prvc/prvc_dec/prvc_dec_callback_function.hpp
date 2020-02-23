@@ -43,6 +43,11 @@ DECLARE_DOWNLOAD_CLASS(CallbackFunctionEMKRequest);
  * @brief Provides callback function in receiving eak request.
  */
 DECLARE_DOWNLOAD_CLASS(CallbackFunctionEAKRequest);
+    
+/**
+ * @brief Provides callback function in receiving pubic key request.
+ */
+DECLARE_DOWNLOAD_CLASS(CallbackFunctionParamRequest);
 
 /**
  * @brief Provides callback function in receiving enc result.

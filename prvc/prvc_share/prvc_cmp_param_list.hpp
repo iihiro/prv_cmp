@@ -105,10 +105,6 @@ static void GetRootHermit(
     const std::size_t dcrt_bit,
     double& root_hermit)
 {
-    // std::assert(mul_depth <= kMaxDepth);
-    // std::assert(logN <= kMaxLogRingDim);
-    // std::assert(rel_window == 0 || rel_window == 30);
-    // std::assert(dcrt_bit == 30 || dcrt_bit == 60);
     if (dcrt_bit == 30) {
         root_hermit = kParamsDcrt30.at(GetKey(mul_depth, logN, rel_window));
     } else {

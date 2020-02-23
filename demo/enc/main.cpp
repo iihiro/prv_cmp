@@ -78,7 +78,8 @@ int main(int argc, char* argv[])
     {
         Option option;
         init(option, argc, argv);
-        STDSC_LOG_INFO("Launched Encryptor demo app");
+        STDSC_LOG_INFO("Launched Encryptor demo app. (input value: %lu)",
+                       option.input_value);
         exec(option);
     }
     catch (stdsc::AbstractException& e)

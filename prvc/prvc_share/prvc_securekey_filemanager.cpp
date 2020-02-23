@@ -23,7 +23,6 @@
 #include <prvc_share/prvc_cmp_param_list.hpp>
 #include <prvc_share/prvc_enctype.hpp>
 #include <prvc_share/prvc_securekey_filemanager.hpp>
-#include <prvc_share/prvc_pubkey.hpp> // for test
 
 #define CHECK_KIND(k) do {                                               \
         if (!((k) < kNumOfKind)) {                                       \
@@ -51,20 +50,6 @@ struct SecureKeyFileManager::Impl
           logN_(logN),
           rel_window_(rel_window),
           dcrt_bits_(dcrt_bits)
-    {
-        filenames_.emplace(kKindPubKey,  pubkey_filename);
-        filenames_.emplace(kKindSecKey,  seckey_filename);
-        filenames_.emplace(kKindContext, context_filename);
-        filenames_.emplace(kKindEMK,     emk_filename);
-        filenames_.emplace(kKindEAK,     eak_filename);
-    }
-    
-    Impl(const std::string& pubkey_filename,
-         const std::string& seckey_filename,
-         const std::string& context_filename,
-         const std::string& emk_filename,
-         const std::string& eak_filename,
-         const std::string& config_filename)
     {
         filenames_.emplace(kKindPubKey,  pubkey_filename);
         filenames_.emplace(kKindSecKey,  seckey_filename);
@@ -106,7 +91,6 @@ struct SecureKeyFileManager::Impl
         eval_automorph_ks = cc->EvalAutomorphismKeyGen(kp_.secretKey, index_list);
         cc->InsertEvalAutomorphismKey(eval_automorph_ks);
 
-#if 1
         lbcrypto::Serialized ser_ctx, ser_emk, ser_eak, ser_pub, ser_pri;
         
         std::ofstream ofs_ctx(filename(kKindContext), std::ios::binary | std::ios::trunc);
@@ -133,48 +117,12 @@ struct SecureKeyFileManager::Impl
 		STDSC_THROW_FILE_IF_CHECK(kp_.secretKey->Serialize(&ser_pri), "Error serializing private key");
         STDSC_THROW_FILE_IF_CHECK(lbcrypto::SerializableHelper::SerializationToStream(ser_pri, ofs_pri),
                                   "Error writing serialized private key to file");
-
-#else
-        lbcrypto::Serialized ctxK, pubK, privK;
-        
-        if( cc->Serialize(&ctxK) ) {
-            std::ofstream ofs(filename(kKindContext), std::ios::binary | std::ios::trunc);
-            if (!lbcrypto::SerializableHelper::SerializationToStream(ctxK, ofs)) {
-				std::cerr << "Error writing serialization of public key to CTX.txt" << std::endl;
-				return;
-			}
-		} else {
-			std::cerr << "Error serializing context" << std::endl;
-			return;
-		}
-        
-        if( kp.publicKey->Serialize(&pubK) ) {
-            std::ofstream ofs(filename(kKindPubKey), std::ios::binary | std::ios::trunc);
-            if (!lbcrypto::SerializableHelper::SerializationToStream(pubK, ofs)) {
-				std::cerr << "Error writing serialization of public key to PUB.txt" << std::endl;
-				return;
-			}
-		} else {
-			std::cerr << "Error serializing public key" << std::endl;
-			return;
-		}
-
-		if( kp.secretKey->Serialize(&privK) ) {
-            std::ofstream ofs(filename(kKindSecKey), std::ios::binary | std::ios::trunc);
-            if (!lbcrypto::SerializableHelper::SerializationToStream(privK, ofs)) {
-				std::cerr << "Error writing serialization of private key to PRI.txt" << std::endl;
-				return;
-			}
-		} else {
-			std::cerr << "Error serializing private key" << std::endl;
-			return;
-		}
-#endif
     }
     
     size_t size(const Kind_t kind) const
     {
         CHECK_KIND(kind);
+        printf("%s\n", filename(kind).c_str());
         return prvc_share::utility::file_size(filename(kind));
     }
     
@@ -233,18 +181,6 @@ SecureKeyFileManager::SecureKeyFileManager(const std::string& pubkey_filename,
     : pimpl_(new Impl(pubkey_filename, seckey_filename, context_filename,
                       emk_filename, eak_filename,
                       mul_depth, logN, rel_window, dcrt_bits))
-{
-}
-
-SecureKeyFileManager::SecureKeyFileManager(const std::string& pubkey_filename,
-                                           const std::string& seckey_filename,
-                                           const std::string& context_filename,
-                                           const std::string& emk_filename,
-                                           const std::string& eak_filename,
-                                           const std::string& config_filename)
-    : pimpl_(new Impl(pubkey_filename, seckey_filename, context_filename,
-                      emk_filename, eak_filename,
-                      config_filename))
 {
 }
 

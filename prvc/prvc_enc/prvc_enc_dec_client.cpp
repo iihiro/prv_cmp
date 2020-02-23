@@ -28,6 +28,8 @@
 #include <prvc_share/prvc_define.hpp>
 #include <prvc_share/prvc_pubkey.hpp>
 #include <prvc_share/prvc_context.hpp>
+#include <prvc_share/prvc_decparam.hpp>
+#include <prvc_share/prvc_plaindata.hpp>
 #include <prvc_enc/prvc_enc_dec_client.hpp>
 
 namespace prvc_enc
@@ -42,11 +44,20 @@ struct DecClient::Impl
     ~Impl(void)
     {}
 
-    void get_results(int64_t& result_overall,
-                     std::vector<int64_t>& result_chunks) const
+    void get_param(prvc_share::DecParam& param)
     {
-    }
+        stdsc::Buffer buffer;
+        client_.recv_data_blocking(prvc_share::kControlCodeDownloadParam, buffer);
 
+        stdsc::BufferStream buffstream(buffer);
+        std::iostream stream(&buffstream);
+
+        prvc_share::PlainData<prvc_share::DecParam> pladata;
+        pladata.load_from_stream(stream);
+
+        param = pladata.data();
+    }
+    
 private:
     stdsc::Client& client_;
 };
@@ -58,10 +69,9 @@ DecClient::DecClient(const char* host, const char* port)
     pimpl_ = std::make_shared<Impl>(client);
 }
 
-void DecClient::get_results(int64_t& result_overall,
-                            std::vector<int64_t>& result_chunks) const
+void DecClient::get_param(prvc_share::DecParam& param)
 {
-    pimpl_->get_results(result_overall, result_chunks);
+    pimpl_->get_param(param);
 }
-
+    
 } /* namespace prvc_enc */

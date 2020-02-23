@@ -72,8 +72,6 @@ static void Comparison(const prvc_share::FHEContext& cc,
                        vector<prvc_share::Ctxt>& v_cres)
 {
     vector<prvc_share::Ctxt> ca_times_cbs(num_chunk);
-    //vector<prvc_share::Ctxt> v_c_equ_res(num_chunk - 1);
-    //vector<prvc_share::Ctxt> v_c_nonequ_res(num_chunk - 1);
 
     v_c_equ_res.resize(num_chunk - 1);
     v_c_nonequ_res.resize(num_chunk - 1);

@@ -15,46 +15,31 @@
  * limitations under the License.
  */
 
-#ifndef PRVC_DEC_SRV_HPP
-#define PRVC_DEC_SRV_HPP
-
-#include <memory>
-#include <string>
-
-namespace stdsc
-{
-    class CallbackFunctionContainer;
-    class StateContext;
-}
+#include <prvc_share/prvc_decparam.hpp>
 
 namespace prvc_share
 {
-    class SecureKeyFileManager;
+
+std::ostream& operator<<(std::ostream& os, const DecParam& param)
+{
+    os << param.mul_depth  << std::endl;
+    os << param.logN       << std::endl;
+    os << param.num_bit    << std::endl;
+    os << param.dcrt_bits  << std::endl;
+    os << param.rel_window << std::endl;
+    os << param.sigma      << std::endl;
+    return os;
 }
 
-namespace prvc_dec
+std::istream& operator>>(std::istream& is, DecParam& param)
 {
-
-/**
- * @brief Provides Decryptor server.
- */
-class DecServer
-{
-public:
-    DecServer(const char* port, stdsc::CallbackFunctionContainer& callback,
-              stdsc::StateContext& state,
-              prvc_share::SecureKeyFileManager& skm);
-    ~DecServer(void) = default;
-
-    void start();
-    void stop();
-    void wait(void);
-
-private:
-    struct Impl;
-    std::shared_ptr<Impl> pimpl_;
-};
-
-} /* namespace prvc_dec */
-
-#endif /* PRVC_DEC_SRV_HPP */
+    is >> param.mul_depth;
+    is >> param.logN;
+    is >> param.num_bit;
+    is >> param.dcrt_bits;
+    is >> param.rel_window;
+    is >> param.sigma;
+    return is;
+}
+    
+} /* namespace prvc_share */

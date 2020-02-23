@@ -43,12 +43,13 @@ struct Context
     Context(void);
     ~Context(void) = default;
 
+#if 0
     void generate(FHEKeyPair& keypair,
-                  const std::size_t mul_depth  = DefaultMulDepth,
-                  const std::size_t logN       = DefaultLogN,
-                  const std::size_t rel_window = DefaultRelWindow,
-                  const std::size_t dcrt_bits  = DefaultDcrtBits);
-    
+                  const std::size_t mul_depth  = SecureKeyFileManager::DefaultMulDepth,
+                  const std::size_t logN       = SecureKeyFileManager::DefaultLogN,
+                  const std::size_t rel_window = SecureKeyFileManager::DefaultRelWindow,
+                  const std::size_t dcrt_bits  = SecureKeyFileManager::DefaultDcrtBits);
+#endif
     void save_to_stream(std::ostream& os, const Kind_t kind=kKindBody) const;
     void load_from_stream(std::istream& is, const Kind_t kind=kKindBody);
 
@@ -57,13 +58,6 @@ struct Context
 
     const FHEContext& get(void) const;
 
-private:
-    static constexpr std::size_t DefaultMulDepth  = 4;
-    static constexpr std::size_t DefaultLogN      = 13;
-    static constexpr std::size_t DefaultDcrtBits  = 60;
-    static constexpr std::size_t DefaultRelWindow = 0;
-    static constexpr double      DefaultSigma     = 32;
-    
 private:
     struct Impl;
     std::shared_ptr<Impl> pimpl_;

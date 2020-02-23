@@ -22,12 +22,14 @@
 #include <stdsc/stdsc_callback_function_container.hpp>
 #include <prvc_share/prvc_securekey_filemanager.hpp>
 #include <prvc_share/prvc_packet.hpp>
+#include <prvc_share/prvc_context.hpp>
+#include <prvc_share/prvc_pubkey.hpp>
+#include <prvc_share/prvc_decparam.hpp>
+#include <prvc_share/prvc_config.hpp>
 #include <prvc_dec/prvc_dec_state.hpp>
 #include <prvc_dec/prvc_dec_callback_param.hpp>
 #include <prvc_dec/prvc_dec_callback_function.hpp>
 #include <prvc_dec/prvc_dec_srv.hpp>
-#include <prvc_share/prvc_context.hpp>
-#include <prvc_share/prvc_pubkey.hpp>
 #include <share/define.hpp>
 
 static constexpr const char* CONTEXT_FILENAME = "context.txt";
@@ -110,6 +112,10 @@ start_srv_async(prvc_dec::CallbackParam& cb_param)
         std::shared_ptr<stdsc::CallbackFunction> cb_eak(
             new prvc_dec::CallbackFunctionEAKRequest());
         callback.set(prvc_share::kControlCodeDownloadEAK, cb_eak);
+
+        std::shared_ptr<stdsc::CallbackFunction> cb_decparam(
+            new prvc_dec::CallbackFunctionParamRequest());
+        callback.set(prvc_share::kControlCodeDownloadParam, cb_decparam);
         
         std::shared_ptr<stdsc::CallbackFunction> cb_end(
             new prvc_dec::CallbackFunctionEncResult());
@@ -125,10 +131,35 @@ start_srv_async(prvc_dec::CallbackParam& cb_param)
     return server;
 }    
 
+void read_config(const std::string& config_filename,
+                 prvc_share::DecParam& dec_param)
+{
+    prvc_share::Config conf;
+    conf.load_from_file(config_filename);
+    
+#define READ(key, val, vfmt) do {                                     \
+        if (conf.is_exist_key(#key))                                  \
+            val = prvc_share::config_get_value<long>(conf, #key);     \
+        STDSC_LOG_INFO("read fhe parameter. (%s: " vfmt ")",          \
+                       #key, val);                                    \
+    } while(0)
+    
+    READ(mul_depth,  dec_param.mul_depth,  "%lu");
+    READ(logN,       dec_param.logN,       "%lu");
+    READ(num_bit,    dec_param.num_bit,    "%lu");
+    READ(dcrt_bits,  dec_param.dcrt_bits,  "%lu");
+    READ(rel_window, dec_param.rel_window, "%lu");
+    READ(sigma,      dec_param.sigma,      "%lf");
+
+#undef READ
+}
+
 void exec(const Param& param)
 {
     STDSC_LOG_INFO("Launched Decryptor demo app");
 
+    prvc_share::DecParam dec_param;
+    
     std::shared_ptr<prvc_share::SecureKeyFileManager> skm_ptr;
     if (param.config_filename.empty()) {
         skm_ptr = std::make_shared<prvc_share::SecureKeyFileManager>(
@@ -138,16 +169,22 @@ void exec(const Param& param)
             param.emk_filename,
             param.eak_filename);
     } else {
+        read_config(param.config_filename, dec_param);
+        
         skm_ptr = std::make_shared<prvc_share::SecureKeyFileManager>(
             param.pubkey_filename,
             param.seckey_filename,
             param.context_filename,
             param.emk_filename,
             param.eak_filename,
-            param.config_filename);
+            dec_param.mul_depth,
+            dec_param.logN,
+            dec_param.rel_window,
+            dec_param.dcrt_bits);
     }
 
     if (param.is_generate_securekey) {
+        std::cout << "generating keys" << std::endl;
         skm_ptr->initialize();
     }
 
@@ -160,13 +197,12 @@ void exec(const Param& param)
     pk.load_from_file("pubkey.txt");
     pk.save_to_file("pubkey2.txt");
 #endif
-
+    
     prvc_dec::CallbackParam cb_param;
     cb_param.skm_ptr = skm_ptr;
     cb_param.context_ptr = std::make_shared<prvc_share::Context>();
     cb_param.context_ptr->load_from_file(param.pubkey_filename);
-    //cb_param.pubkey_ptr = std::make_shared<prvc_share::PubKey>(cb_param.context_ptr->get());
-    //cb_param.pubkey_ptr->load_from_file(param.pubkey_filename);
+    cb_param.param = dec_param;
 
     auto server = start_srv_async(cb_param);
     server->wait();

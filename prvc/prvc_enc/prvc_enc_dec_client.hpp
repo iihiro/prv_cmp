@@ -22,6 +22,11 @@
 #include <vector>
 #include <prvc_share/prvc_dec_client_base.hpp>
 
+namespace prvc_share
+{
+class DecParam;
+}
+
 namespace prvc_enc
 {
 
@@ -36,8 +41,7 @@ public:
     DecClient(const char* host, const char* port);
     virtual ~DecClient(void) = default;
 
-    void get_results(int64_t& result_overall,
-                     std::vector<int64_t>& result_chunks) const;
+    void get_param(prvc_share::DecParam& param);
     
 private:
     struct Impl;

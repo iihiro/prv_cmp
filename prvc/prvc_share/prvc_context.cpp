@@ -14,6 +14,7 @@ struct Context::Impl
     Impl()
     {}
 
+#if 0
     void generate(FHEKeyPair& keypair,
                   const std::size_t mul_depth,
                   const std::size_t logN,
@@ -24,7 +25,7 @@ struct Context::Impl
         GetRootHermit(mul_depth, logN, rel_window, dcrt_bits, root_hermit);
 
         lbcrypto::PlaintextModulus ptm = (1 << logN) - 1;
-        double sigma = DefaultSigma;
+        double sigma = SecureKeyFileManager::DefaultSigma;
 
         data_ = lbcrypto::CryptoContextFactory<PolyType>::genCryptoContextBFVrns(
             ptm, root_hermit, sigma, 0, mul_depth, 0, OPTIMIZED, 2, rel_window, dcrt_bits);
@@ -47,6 +48,7 @@ struct Context::Impl
         eval_automorph_ks = data_->EvalAutomorphismKeyGen(keypair.secretKey, index_list);
         data_->InsertEvalAutomorphismKey(eval_automorph_ks);
     }
+#endif
     
     void save_to_stream(std::ostream& os, const Kind_t kind) const
     {
@@ -113,6 +115,7 @@ private:
 Context::Context(void) : pimpl_(new Impl())
 {}
 
+#if 0
 void Context::generate(FHEKeyPair& keypair,
                        const std::size_t mul_depth,
                        const std::size_t logN,
@@ -121,6 +124,7 @@ void Context::generate(FHEKeyPair& keypair,
 {
     pimpl_->generate(keypair, mul_depth, logN, rel_window, dcrt_bits);
 }
+#endif
 
 void Context::save_to_stream(std::ostream& os, const Kind_t kind) const
 {

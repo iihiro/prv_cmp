@@ -24,7 +24,7 @@
 
 namespace stdsc
 {
-    class Client;
+class Client;
 }
 
 namespace prvc_share

@@ -28,8 +28,6 @@ struct CallbackParam;
 namespace prvc_eval
 {
 
-//using CallbackParam = prvc_eval::CallbackParam;
-
 /**
  * @brief Provides callback function in receiving enc input.
  */

@@ -79,7 +79,7 @@ DecServer::DecServer(const char* port,
                      stdsc::CallbackFunctionContainer& callback,
                      stdsc::StateContext& state,
                      prvc_share::SecureKeyFileManager& skm)
-  : pimpl_(new Impl(port, callback, state, skm))
+    : pimpl_(new Impl(port, callback, state, skm))
 {
 }
 

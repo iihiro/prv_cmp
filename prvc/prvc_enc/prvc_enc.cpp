@@ -31,6 +31,7 @@
 #include <prvc_share/prvc_encdata.hpp>
 #include <prvc_share/prvc_encparam.hpp>
 #include <prvc_share/prvc_plaindata.hpp>
+#include <prvc_share/prvc_decparam.hpp>
 #include <prvc_enc/prvc_enc_dec_client.hpp>
 #include <prvc_enc/prvc_enc_eval_client.hpp>
 #include <prvc_enc/prvc_enc.hpp>
@@ -40,26 +41,22 @@ namespace prvc_enc
 
 static void SplitValues(const size_t numbit,
                         const size_t bit_per_chunk,
-                        const uint64_t a,
+                        const uint64_t x,
                         size_t& numint,
-                        vector<uint64_t>& as)
+                        vector<uint64_t>& xs)
 {
     if (numbit <= bit_per_chunk) {
         numint = 1;
-        as.push_back(a);
+        xs.push_back(x);
     } else {
         numint = ceil(static_cast<double>(numbit) / bit_per_chunk);
         uint64_t mask = (1 << (bit_per_chunk + 1)) - 1;
-        uint64_t a_tmp;
+        uint64_t x_tmp;
         for (size_t i = 0; i < numint; ++i) {
-            a_tmp = a >> (i * bit_per_chunk);
-            as.push_back(a_tmp & mask);
+            x_tmp = x >> (i * bit_per_chunk);
+            xs.push_back(x_tmp & mask);
         }
     }
-    // Decryptor側へnumint(num_chunk)を渡して、そちらでresizeする
-    //ca_times_cbs_.resize(numint);
-    //v_c_equ_res_.resize(numint - 1);
-    //v_c_nonequ_res_.resize(numint - 1);
 }
 
 static void MakeMonomialCoeff(const usint d,
@@ -118,6 +115,11 @@ struct Encryptor::Impl
         
         pubkey_ = std::make_shared<prvc_share::PubKey>(context_->get());
         dec_client_->get_pubkey(*pubkey_);
+
+        dec_client_->get_param(dec_param_);
+        
+        printf("param: logN:%lu, num_bit:%lu\n",
+               dec_param_.logN, dec_param_.num_bit);
     }
 
     ~Impl(void)
@@ -131,8 +133,12 @@ struct Encryptor::Impl
         
         vector<uint64_t> x_chunks;
         SplitValues(num_bit, logN, val, num_chunk, x_chunks);
-        STDSC_LOG_DEBUG("split values: bit:%lu, chunks:%lu",
-                        num_bit, num_chunk);
+        
+        printf("splitted values (n=%lu): ", num_chunk);
+        for (size_t i=0; i<x_chunks.size(); ++i) {
+            printf("%lu:%lu ", i, x_chunks[i]);
+        }
+        printf("\n");
 
         auto& cc = context_->get();
         const usint N = cc->GetCryptoParameters()->GetElementParams()->GetCyclotomicOrder() / 2;
@@ -149,7 +155,7 @@ struct Encryptor::Impl
         prvc_share::EncData encdata(*context_.get());
         encdata.encrypt(vptxt, *pubkey_.get());
 
-#if 1 //test
+#if 0 //test
         encdata.save_to_file("encinput.txt");
 
         prvc_share::EncData encdata2(*context_.get());
@@ -157,7 +163,6 @@ struct Encryptor::Impl
         encdata2.save_to_file("encinput2.txt");
 #endif
 
-        printf("num_chunk: %lu\n", num_chunk);
         prvc_share::EncParam param;
         param.num_chunk = num_chunk;
 
@@ -170,6 +175,7 @@ struct Encryptor::Impl
 private:
     std::shared_ptr<DecClient> dec_client_;
     std::shared_ptr<EvalClient> eval_client_;
+    prvc_share::DecParam dec_param_;
     const bool is_neg_mononical_coef_;
     const uint32_t retry_interval_usec_;
     const uint32_t timeout_sec_;

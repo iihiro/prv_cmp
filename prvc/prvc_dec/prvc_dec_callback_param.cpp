@@ -21,7 +21,6 @@
 namespace prvc_dec
 {
 
-
 CallbackParam::CallbackParam(void)
 {
 }

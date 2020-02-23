@@ -1,0 +1,6 @@
+mul_depth  = 4
+logN       = 13
+num_bit    = 30
+dcrt_bits  = 60
+rel_window = 0
+sigma      = 32
