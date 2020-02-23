@@ -176,12 +176,17 @@ DEFUN_DATA(CallbackFunctionEncResult)
     for (size_t i=0; i<v_c_cmp_res.size(); ++i) {
         const auto& ctxt = v_c_cmp_res[i];
         int64_t dec_constant = DecryptAndGetConstantTerm(cc, sk, ctxt);
-        std::cout << "Comparison Result on "
-                  << i << "-th chunck: " << dec_constant << std::endl;
+        //std::cout << "Comparison Result on "
+        //<< i << "-th chunck: " << dec_constant << std::endl;
+        STDSC_LOG_INFO("Comparison Result on %lu -th chunk: %ld",
+                       i, dec_constant);
     }
     int64_t dec_constant = DecryptAndGetConstantTerm(cc, sk, c_cmp_res);
-    std::cout << "Overall Comparison Result (x<=y)?: "
-              << dec_constant << std::endl;
+    //std::cout << "Overall Comparison Result (x<=y)?: "
+    //<< dec_constant << std::endl;
+    STDSC_LOG_INFO("Overall Comparison Result (x<=y)?: %ld",
+                   dec_constant);
+    
 }
 
 } /* namespace prvc_dec */

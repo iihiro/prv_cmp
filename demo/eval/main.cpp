@@ -73,7 +73,7 @@ void exec(const Option& option)
     callback.set_commondata(static_cast<void*>(&param), sizeof(param),
                             stdsc::kCommonDataOnEachConnection);
     callback.set_commondata(static_cast<void*>(&cparam), sizeof(cparam),
-    stdsc::kCommonDataOnAllConnection);
+                            stdsc::kCommonDataOnAllConnection);
 
     std::shared_ptr<prvc_eval::EvalServer> server
         = std::make_shared<prvc_eval::EvalServer>(PORT_EVAL_SRV, callback, state);
