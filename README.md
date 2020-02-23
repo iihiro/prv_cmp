@@ -3,43 +3,34 @@
 ![](doc/img/overview.png)
 
 # Prerequisites
-* Ubuntu LTS 16.04
-* glibc 2.23
-* g++ 5.4.0
+* Linux (Cent OS 7.3, Ubuntu LTS 16.04)
+* gcc7 (g++ 7) or higher
 * cmake 3.5
-* [HElib v1.0.0](https://github.com/homenc/HElib/tree/v1.0.0)
+* PALISADE version 1.2
 * doxygen (to generate documentation)
 * xterm (to run demo app using `demo.sh`)
 
 # How to build
-1. Build and install [HElib](https://github.com/homenc/HElib/tree/v1.0.0) according to Option 1 in INSTALL.md with the `-DCMAKE_BUILD_TYPE=Release` option without the `-DCMAKE_INSTALL_PREFIX=...` option (to install to `/usr/local/helib_pack`) added to Step 2.
-2. Run the following commands at the root of NB-Classify library to build the library.
+1. Build and install [PALISADE](https://gitlab.com/palisade/palisade-release/tree/PALISADE-v1.2) and create symbolic link `~/palisade-release` from installed directory.
+2. Run the following commands at the root of prv_cmp.
     ```sh
     $ git submodule update -i
     $ mkdir build && cd build
     $ cmake ..
     $ make
     ```
-    if you add the `-DALGO=<algorithm>` option to the cmake command, you can specify the classification algorithm. the following <algorithm> can be specified.
-    * `Single` : compute each data (Default)
-    * `SingleOpt` : compute each data with optimization
-    * `Multi` : compute multi data at onece
-
-3. Once the library is built, return to the root of library
-
+    
     the following files generated.
 
 | File | Content |
 |:---|:---|
-| `build/nbc/nbc_ta/libnbc_ta.so` | TA library |
-| `build/nbc/nbc_cs/libnbc_cs.so` | CS library |
-| `build/nbc/nbc_mp/libnbc_mp.so` | MP library |
-| `build/nbc/nbc_client/libnbc_client.so` | Client library |
+| `build/prvc/prvc_dec/libprvc_dec.so` | Decryptor library |
+| `build/prvc/prvc_enc/libprvc_enc.so` | Encryptor library |
+| `build/prvc/prvc_eval/libprvc_eval.so` | Evaluator library |
 | `build/stdsc/stdsc/libstdsc.so` | stdsc library |
-| `demo/ta/ta` | TA demo app |
-| `demo/cs/cs` | CS demo app |
-| `demo/mp/mp` | MP demo app |
-| `demo/client/client` | Client demo app |
+| `demo/dec/dec` | Decryptor demo app |
+| `demo/enc/enc` | Encryptor demo app |
+| `demo/eval/eval` | Evaluator demo app |
 
 # API Reference
 1. Run the following command at the root of NB-Classify library to build the document.
@@ -49,143 +40,68 @@
 2. see `doc/html/index.html`
 
 # How to run
-1. Run the following command at the root of NB-Classify library to run demo app.
+1. Run the following command at the root of prv_cmp to run demo app.
     ```sh
     $ ./demo.sh
     ```
 
 # Demo App
-The demo app consists of four processes: TA, CS, MP and Client. These processes communicate as shown in the following figure.
+The demo app consists of four processes: Decryptor, Encryptor1, Encryptor2 and Evaluator. These processes communicate as shown in the following figure.
 
-![](doc/img/nbc_flow.png)
+![](doc/img/prvc_flow.png)
 
-## TA demo app
+## Decryptor demo app
 * Behavior
-    * If the `-g` option is specified, TA generates FHE keys. (Fig: (1))
-    * TA receives the public key request, then returns a public key and context. (Fig: (2))
-    * TA receives the session creation request, then generate UUID and returns it. (Fig: (5))
-    * TA receives the computation request, then compute while communicating with CS. (Fig: (8))
-    * TA receives the result request, then returns result indexes corresponding to the session ID (Fig: (10))
+    * If the `-g` option is specified, Decryptor generates keys. (Fig: (1))
+    * Decryptor receives the public key request, then returns a public key and context. (Fig: (2))
+    * Decryptor receives the comparision results (Enc(x<y)), then decrypt it (-> x<y). (Fig: (6,7))
 * Usage
     ```sh
-    Usage: ./ta [-p pubkey_filename] [-s seckey_filename] [-c context_filename] [-t config_filename] [-g]
+    Usage: ./dec [-p pubkey_filename] [-s seckey_filename] [-c context_filename] [-e emk_filename] [-a eak_filename] [-t config_filename] [-g]
     ```
-    * -p pubkey_filename : file path of public key file (REQUIRED)
-    * -s seckey_filename : file path of secret key file (REQUIRED)
-    * -s context_filename : file path of context key file (REQUIRED)
+    * -p pubkey_filename : file path of public key file (OPTIONAL, Default:"pubkey.txt")
+    * -s seckey_filename : file path of secret key file (OPTIONAL, Default:"seckey.txt")
+    * -s context_filename : file path of context key file (OPTIONAL, Default:"context.txt")
+    * -s emk_filename : file path of eval multi key file (OPTIONAL, Default:"emk.txt")
+    * -s eak_filename : file path of eval automorphism key file (OPTIONAL, Default:"eak.txt")
     * -t config_filename : file path of configuration file (OPTINAL)
     * -g : generates FHE keys if this option is specified (OPTINAL)
 * Configuration
-    * Specify the following FHE parameters in the configuration file.
+    * Specify the following PALISADE parameters in the configuration file.
         ```
-        fheM = 11119 (Default: 11119)
-        fheL = 180   (Default: 180)
-        fheP = 2     (Default: 2)
-        fheR = 18    (Default: 18)
-        fheC = 3     (Default: 3)
-        fheW = 64    (Default: 64)
-        fheD = 0     (Default: 0)
+        mul_depth  = 4  (Default: 4)
+        logN       = 13 (Default: 13)
+        num_bit    = 30 (Default: 30)
+        dcrt_bits  = 60 (Default: 60)
+        rel_window = 0  (Default: 0)
+        sigma      = 32 (Default: 32)
         ```
 
 * State Transition Diagram
-    * ![](doc/img/nbc_ta_state.png)
+    * ![](doc/img/prvc_dec_state.png)
 
-## CS demo app
+## Evaluator demo app
 * Behavior
-    * CS sends the public key request to TA, then receives the public key. (Fig: (2))
-    * CS receives the encrypted model (Fig: (4))
-    * CS receives the session creation request, then returns the session ID generated by TA. (Fig: (5))
-    * CS receives query from Client, then compute while communicating with TA. (Fig: (8))
+    * Evaluator sends the evk request to Decryptor, then receives the evk. (Fig: (2))
+    * Evaluator receives the encrypted data (Enc(x), (y)) from Encryptor, then compute comparision and send results to Decryptor. (Fig: (4,5,6))
 * Usage
     ```sh
-    Usage: ./cs
+    Usage: ./eval
     ```
+    
 * State Transition Diagram
-  * ![](doc/img/nbc_cs_state.png)
+  * ![](doc/img/prvc_eval_state.png)
 
-## MP demo app
+## Encryptor demo app
 * Behavior
-    * MP sends the public key request to TA, then receives the public key. (Fig: (2))
-    * MP encrypts the model data specified by `model_filename` and `info_filename`, then sends encrypted data to CS. (Fig: (3)(4))
+    * Encryptor sends the public key request to Decryptor, then receives the public key. (Fig: (2))
+    * Encryptor encrypts the input value, then sends encrypted data to Evaluator. (Fig: (3)(4))
 * Usage
     ```sh
-    Usage: ./client [-i input_filename] [-m model_filename]
+    Usage: ./client [-t is_neg] <value>
     ```
-    * -i info_filename : file path of info data (REQUIRED)
-    * -m model_filename : file path of model data (REQUIRED)
-
-## Client demo app
-* Behavior
-    * Client sends the public key request to TA, then receives the public key. (Fig: (2))
-    * Client sends the session creation request to CS, then receives the session ID. (Fig: (4))
-    * Client encrypts the input data specified by `test_filename` and `info_filename`, then sends encrypted data as query to CS. (Fig: (3)(6))
-    * Client sends the result request to TA, then receives the result indexes and compute classification result using indexes. (Fig: (10)(11))
-* Usage
-    ```sh
-    Usage: ./client [-i input_filename] [-t test_filename]
-    ```
-    * -i info_filename : file path of info data (REQUIRED)
-    * -t test_filename : file path of test data (REQUIRED)
-
-# Format of data sets and other files
-## List of necessary files
-* `$(dataset_name)_info.csv`
-* `$(dataset_name)_model.csv`
-* `$(dataset_name)_test.csv`
-* `$(dataset_name)_train.csv`  (unnecessary if you are going to use your own program for training, given that the model will be formatted in the correct way)
-
-where `$(dataset_name)` is the name of the data set you will later use when running the programming.
-
-A set of sample files is provided in the `datasets` directory. 
-
-You can use `train.py` to train a classification model and write it out to the required format given that the `$(dataset_name)_info.csv` and `$(dataset_name)_train.csv` is formatted correctly.
-
-## Format of $(dataset_name)_info.csv
-First row contains names of the class labels. From second row, it contains the names or a value of a feature value for each attribute, one attirubte per row.
-
-Example is given below where N is the number of classes, m is the number of feature values for attribute j.
-```
-label_0, label_1, ... , label_N
-f_0_0, f_1_0, ... , f_m_0
-f_0_1, f_1_1, ... , f_m_1
-...
-f_0_j, f_1_j, ... , f_m_j
-```
-
-## Format of $(dataset_name)_model.csv
-First row contains the class probabilities. Then, seperated by empty line, it contains series of conditional probabilities where each line contains a conditional probability for each feature value and attribute.
-Example is given below where N is the number of classes, m is the number of feature values for attribute j.
-```
-cl_0, cl_1, ... , cl_N
-
-cp_0_0_0, cp_0_1_0, ... , cp_0_m_0
-cp_0_0_1, cp_0_1_1, ... , cp_0_m_1
-...
-cp_0_0_j, cp_0_1_j, ... , cp_0_m_j
-
-cp_1_0_0, cp_1_1_0, ... , cp_1_m_0
-cp_1_0_1, cp_1_1_1, ... , cp_1_m_1
-...
-cp_1_0_j, cp_1_1_j, ... , cp_1_m_j
-
-
-...
-
-
-cp_N_0_0, cp_N_1_0, ... , cp_N_m_0
-cp_N_0_1, cp_N_1_1, ... , cp_N_m_1
-...
-cp_N_0_j, cp_N_1_j, ... , cp_N_m_j
-```
-
-## Format of $(dataset_name)_test.csv and $(dataset_name)_train.csv
-Each line contains data for classification where each value is the feature value for an attribute and the last value is the actual label. 
-```
-f0, f1, ..., fj, label
-```
-
-## References
-* HElib:  https://github.com/homenc/HElib
+    * -t is_neg : boolean (0: false, 1: true) of mononical coefficient (OPTIONAL, Default:0)
+    * <value>   : input value
 
 # License
 Copyright 2018 Yamana Laboratory, Waseda University
