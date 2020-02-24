@@ -30,6 +30,7 @@
 #include <prvc_dec/prvc_dec_callback_param.hpp>
 #include <prvc_dec/prvc_dec_callback_function.hpp>
 #include <prvc_dec/prvc_dec_srv.hpp>
+#include <prvc_dec/prvc_dec_result.hpp>
 #include <share/define.hpp>
 
 static constexpr const char* CONTEXT_FILENAME = "context.txt";
@@ -91,7 +92,7 @@ void init(Param& param, int argc, char* argv[])
 }
 
 static std::shared_ptr<prvc_dec::DecServer>
-start_srv_async(prvc_dec::CallbackParam& cb_param)
+start_srv_async(prvc_dec::CallbackParam& cb_param, prvc_dec::CommonCallbackParam& ccb_param)
 {
     stdsc::StateContext state(std::make_shared<prvc_dec::StateReady>());
 
@@ -121,7 +122,10 @@ start_srv_async(prvc_dec::CallbackParam& cb_param)
             new prvc_dec::CallbackFunctionEncResult());
         callback.set(prvc_share::kControlCodeDataEncResult, cb_end);
 
-        callback.set_commondata(static_cast<void*>(&cb_param), sizeof(cb_param));
+        callback.set_commondata(static_cast<void*>(&cb_param), sizeof(cb_param),
+                                stdsc::kCommonDataOnEachConnection);
+        callback.set_commondata(static_cast<void*>(&ccb_param), sizeof(ccb_param),
+                                stdsc::kCommonDataOnAllConnection);
     }
 
     std::shared_ptr<prvc_dec::DecServer> server = std::make_shared<prvc_dec::DecServer>(
@@ -204,7 +208,8 @@ void exec(const Param& param)
     cb_param.context_ptr->load_from_file(param.pubkey_filename);
     cb_param.param = dec_param;
 
-    auto server = start_srv_async(cb_param);
+    prvc_dec::CommonCallbackParam ccb_param;
+    auto server = start_srv_async(cb_param, ccb_param);
     server->wait();
 }
 

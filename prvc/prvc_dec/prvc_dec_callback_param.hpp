@@ -21,6 +21,7 @@
 #include <memory>
 #include <vector>
 #include <prvc_share/prvc_decparam.hpp>
+#include <prvc_dec/prvc_dec_result.hpp>
 
 namespace prvc_share
 {
@@ -42,6 +43,15 @@ struct CallbackParam
     std::shared_ptr<prvc_share::SecureKeyFileManager> skm_ptr;
     std::shared_ptr<prvc_share::Context> context_ptr;
     prvc_share::DecParam param;
+};
+
+/**
+ * @brief This class is used to hold the callback parameters for Decryptor
+ * This parameter to shared on all connections.
+ */
+struct CommonCallbackParam
+{
+    std::vector<DecResult> vresult;
 };
 
 } /* namespace prvc_dec */

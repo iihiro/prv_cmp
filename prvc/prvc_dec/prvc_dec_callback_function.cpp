@@ -32,6 +32,7 @@
 #include <prvc_dec/prvc_dec_callback_function.hpp>
 #include <prvc_dec/prvc_dec_callback_param.hpp>
 #include <prvc_dec/prvc_dec_state.hpp>
+#include <prvc_dec/prvc_dec_result.hpp>
 
 namespace prvc_dec
 {
@@ -152,10 +153,11 @@ DEFUN_DATA(CallbackFunctionEncResult)
                    state.current_state_str().c_str());
 
     DEF_CDATA_ON_EACH(prvc_dec::CallbackParam);
+    DEF_CDATA_ON_ALL(prvc_dec::CommonCallbackParam);
 
-    auto& skm = *cdata_e->skm_ptr;
-    
+    auto& skm     = *cdata_e->skm_ptr;
     auto& context = *cdata_e->context_ptr;
+    auto& vresult = cdata_a->vresult;
 
     stdsc::BufferStream buffstream(buffer);
     std::iostream stream(&buffstream);
@@ -172,21 +174,22 @@ DEFUN_DATA(CallbackFunctionEncResult)
     const auto& cc = context.get();
 
     auto& sk = skm.keypair().secretKey;
+
+    prvc_dec::DecResult result;
     
     for (size_t i=0; i<v_c_cmp_res.size(); ++i) {
         const auto& ctxt = v_c_cmp_res[i];
         int64_t dec_constant = DecryptAndGetConstantTerm(cc, sk, ctxt);
-        //std::cout << "Comparison Result on "
-        //<< i << "-th chunck: " << dec_constant << std::endl;
         STDSC_LOG_INFO("Comparison Result on %lu -th chunk: %ld",
                        i, dec_constant);
+        result.vdec.push_back(dec_constant);
     }
     int64_t dec_constant = DecryptAndGetConstantTerm(cc, sk, c_cmp_res);
-    //std::cout << "Overall Comparison Result (x<=y)?: "
-    //<< dec_constant << std::endl;
     STDSC_LOG_INFO("Overall Comparison Result (x<=y)?: %ld",
                    dec_constant);
-    
+    result.dec = dec_constant;
+
+    vresult.push_back(result);
 }
 
 } /* namespace prvc_dec */
