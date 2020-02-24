@@ -32,7 +32,7 @@ namespace prvc_dec
 {
 
 /**
- * @brief This class is used to hold the callback parameters for Decriptor.
+ * @brief This class is used to hold the callback parameters for Decryptor.
  */
 struct CallbackParam
 {
