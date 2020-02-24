@@ -28,7 +28,7 @@ namespace prvc_eval
 class Client;
     
 /**
- * @brief This class is used to hold the callback parameters for Server on Evaluator.
+ * @brief This class is used to hold the callback parameters for Evaluator.
  */
 struct CallbackParam
 {
@@ -44,7 +44,7 @@ private:
 };
 
 /**
- * @brief This class is used to hold the callback parameters for Server#1 on CS.
+ * @brief This class is used to hold the callback parameters for Evaluator.
  * This parameter to shared on all connections.
  */
 struct CommonCallbackParam
