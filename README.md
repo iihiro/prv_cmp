@@ -1,6 +1,13 @@
 # Private Comparison
 
+Private Comparision library (prv_cmp) compare the magnitudes of 1-bit integers x and y while encrypting them.
+
 ![](doc/img/overview.png)
+
+* Decryptor only obtains numerical comparison results without knowing x and y
+* Encryptor1 encrypts the integer x (Enc(x)) and sends it to Evaluator
+* Encryptor2 encrypts the integer x (Enc(y)) and sends it to Evaluator
+* Evaluator performs a magnitude comparison operation on Enc (x) and Enc (y) in an encrypted state, and sends the result (Enc(x<=y {0,1})) to Decryptor
 
 # Prerequisites
 * Linux (Cent OS 7.3, Ubuntu LTS 16.04)
@@ -57,7 +64,8 @@ The demo app consists of four processes: Decryptor, Encryptor1, Encryptor2 and E
     * Decryptor receives the comparision results (Enc(x<y)), then decrypt it (-> x<y). (Fig: (6,7))
 * Usage
     ```sh
-    Usage: ./dec [-p pubkey_filename] [-s seckey_filename] [-c context_filename] [-e emk_filename] [-a eak_filename] [-t config_filename] [-g]
+    Usage: ./dec [-p pubkey_filename] [-s seckey_filename] [-c context_filename] \
+                 [-e emk_filename] [-a eak_filename] [-t config_filename] [-g]
     ```
     * -p pubkey_filename : file path of public key file (OPTIONAL, Default:"pubkey.txt")
     * -s seckey_filename : file path of secret key file (OPTIONAL, Default:"seckey.txt")
