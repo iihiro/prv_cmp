@@ -67,7 +67,7 @@ struct SecureKeyFileManager::Impl
 
         // Context
         lbcrypto::PlaintextModulus ptm = (1 << logN_) - 1;
-        double sigma = DefaultSigma;
+        double sigma = DecParam::DefaultSigma;
         
         FHEContext cc;
         cc = lbcrypto::CryptoContextFactory<PolyType>::genCryptoContextBFVrns(
@@ -122,7 +122,6 @@ struct SecureKeyFileManager::Impl
     size_t size(const Kind_t kind) const
     {
         CHECK_KIND(kind);
-        printf("%s\n", filename(kind).c_str());
         return prvc_share::utility::file_size(filename(kind));
     }
     

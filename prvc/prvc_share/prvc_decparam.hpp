@@ -28,13 +28,19 @@ namespace prvc_share
  */
 struct DecParam
 {
-    std::size_t mul_depth;
-    std::size_t logN;
-    std::size_t num_bit;
-    std::size_t dcrt_bits;
-    std::size_t rel_window;
-    double      sigma;
-    
+    std::size_t mul_depth  = DefaultMulDepth;
+    std::size_t logN       = DefaultLogN;
+    std::size_t num_bit    = DefaultNumBit;
+    std::size_t dcrt_bits  = DefaultDcrtBits;
+    std::size_t rel_window = DefaultRelWindow;
+    double      sigma      = DefaultSigma;
+
+    static constexpr std::size_t DefaultMulDepth  = 4;
+    static constexpr std::size_t DefaultLogN      = 13;
+    static constexpr std::size_t DefaultNumBit    = 30;
+    static constexpr std::size_t DefaultDcrtBits  = 60;
+    static constexpr std::size_t DefaultRelWindow = 0;
+    static constexpr double      DefaultSigma     = 32;
 };
 
 std::ostream& operator<<(std::ostream& os, const DecParam& param);

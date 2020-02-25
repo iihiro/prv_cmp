@@ -20,6 +20,8 @@
 
 #include <memory>
 #include <prvc_share/prvc_enctype.hpp>
+#include <prvc_share/prvc_decparam.hpp>
+
 
 namespace lbcrypto
 {
@@ -35,12 +37,6 @@ namespace prvc_share
 class SecureKeyFileManager
 {
 public:
-    static constexpr std::size_t DefaultMulDepth  = 4;
-    static constexpr std::size_t DefaultLogN      = 13;
-    static constexpr std::size_t DefaultNumBit    = 30;
-    static constexpr std::size_t DefaultDcrtBits  = 60;
-    static constexpr std::size_t DefaultRelWindow = 0;
-    static constexpr double      DefaultSigma     = 32;
 
     enum Kind_t : int32_t
     {
@@ -59,10 +55,10 @@ public:
                          const std::string& contest_filename,
                          const std::string& emk_filename,
                          const std::string& eak_filename,
-                         const std::size_t mul_depth  = DefaultMulDepth,
-                         const std::size_t logN       = DefaultLogN,
-                         const std::size_t rel_window = DefaultRelWindow,
-                         const std::size_t dcrt_bits  = DefaultDcrtBits);
+                         const std::size_t mul_depth  = DecParam::DefaultMulDepth,
+                         const std::size_t logN       = DecParam::DefaultLogN,
+                         const std::size_t rel_window = DecParam::DefaultRelWindow,
+                         const std::size_t dcrt_bits  = DecParam::DefaultDcrtBits);
 
     ~SecureKeyFileManager(void) = default;
 
