@@ -176,6 +176,8 @@ DEFUN_DATA(CallbackFunctionEncResult)
     auto& sk = skm.keypair().secretKey;
 
     prvc_dec::DecResult result;
+
+    STDSC_LOG_INFO("Decrypt enc result.");
     
     for (size_t i=0; i<v_c_cmp_res.size(); ++i) {
         const auto& ctxt = v_c_cmp_res[i];
@@ -190,6 +192,8 @@ DEFUN_DATA(CallbackFunctionEncResult)
     result.dec = dec_constant;
 
     vresult.push_back(result);
+
+    fprintf(stderr, "%ld\n", dec_constant);
 }
 
 } /* namespace prvc_dec */

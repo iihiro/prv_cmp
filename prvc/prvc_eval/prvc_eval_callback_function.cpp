@@ -43,7 +43,7 @@ namespace prvc_eval
 // CallbackFunctionEncInput
 DEFUN_DATA(CallbackFunctionEncInput)
 {
-    STDSC_LOG_INFO("Received input data. (current state : %s)",
+    STDSC_LOG_INFO("Received enc input. (current state : %s)",
                    state.current_state_str().c_str());
 
     DEF_CDATA_ON_EACH(prvc_eval::CallbackParam);
@@ -64,6 +64,8 @@ DEFUN_DATA(CallbackFunctionEncInput)
     compara->push(encdata);
 
     if (compara->is_comparable()) {
+        STDSC_LOG_INFO("Compare enc results.");
+        
         const auto& param = pladata.data();
         std::vector<prvc_share::Ctxt> v_c_cmp_res(param.num_chunk);
         prvc_share::Ctxt c_cmp_res;
