@@ -24,7 +24,7 @@ std::ostream& operator<<(std::ostream& os, const DecParam& param)
 {
     os << param.mul_depth  << std::endl;
     os << param.logN       << std::endl;
-    os << param.num_bit    << std::endl;
+    os << param.bit_len    << std::endl;
     os << param.dcrt_bits  << std::endl;
     os << param.rel_window << std::endl;
     os << param.sigma      << std::endl;
@@ -35,7 +35,7 @@ std::istream& operator>>(std::istream& is, DecParam& param)
 {
     is >> param.mul_depth;
     is >> param.logN;
-    is >> param.num_bit;
+    is >> param.bit_len;
     is >> param.dcrt_bits;
     is >> param.rel_window;
     is >> param.sigma;

@@ -40,9 +40,9 @@ public:
               const uint32_t timeout_sec = PRVC_TIMEOUT_SEC);
     virtual ~Encryptor(void) = default;
 
-    void compute(const uint64_t val,
+    void compute(const int64_t val,
                  const size_t logN    = DefaultLogN,
-                 const size_t num_bit = DefaultNumBit);
+                 const size_t bit_len = DefaultNumBit);
     
 private:
     static constexpr std::size_t  DefaultLogN   = 13;

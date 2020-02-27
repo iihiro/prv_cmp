@@ -30,14 +30,14 @@ struct DecParam
 {
     std::size_t mul_depth  = DefaultMulDepth;
     std::size_t logN       = DefaultLogN;
-    std::size_t num_bit    = DefaultNumBit;
+    std::size_t bit_len    = DefaultBitLen;
     std::size_t dcrt_bits  = DefaultDcrtBits;
     std::size_t rel_window = DefaultRelWindow;
     double      sigma      = DefaultSigma;
 
     static constexpr std::size_t DefaultMulDepth  = 4;
     static constexpr std::size_t DefaultLogN      = 13;
-    static constexpr std::size_t DefaultNumBit    = 30;
+    static constexpr std::size_t DefaultBitLen    = 30;
     static constexpr std::size_t DefaultDcrtBits  = 60;
     static constexpr std::size_t DefaultRelWindow = 0;
     static constexpr double      DefaultSigma     = 3.2;

@@ -19,6 +19,7 @@
 #include <fstream>
 #include <vector>
 #include <cstring>
+#include <cmath>
 #include <stdsc/stdsc_client.hpp>
 #include <stdsc/stdsc_buffer.hpp>
 #include <stdsc/stdsc_packet.hpp>
@@ -39,18 +40,34 @@
 namespace prvc_enc
 {
 
-static void SplitValues(const size_t numbit,
+static uint64_t NormalizeValue(const int64_t val,
+                               const size_t bitlen)
+{
+    if (bitlen > 64 || bitlen == 0) {
+        std::ostringstream oss;
+        oss << "bitlen is invalid value. (bitlen: " << bitlen
+            << ")" << std::endl;
+        STDSC_THROW_INVPARAM(oss.str());
+    }
+
+    double signedmax = std::pow(2, bitlen-1);
+    auto offset = static_cast<uint64_t>(signedmax);
+    
+    return val + offset;
+}
+   
+static void SplitValues(const size_t bitlen,
                         const size_t bit_per_chunk,
                         const uint64_t x,
                         size_t& numint,
                         vector<uint64_t>& xs)
 {
-    if (numbit <= bit_per_chunk) {
+    if (bitlen <= bit_per_chunk) {
         numint = 1;
         xs.push_back(x);
     } else {
-        numint = ceil(static_cast<double>(numbit) / bit_per_chunk);
-        uint64_t mask = (1 << (bit_per_chunk + 1)) - 1;
+        numint = ceil(static_cast<double>(bitlen) / bit_per_chunk);
+        uint64_t mask = (1 << (bit_per_chunk)) - 1;
         uint64_t x_tmp;
         for (size_t i = 0; i < numint; ++i) {
             x_tmp = x >> (i * bit_per_chunk);
@@ -118,8 +135,8 @@ struct Encryptor::Impl
 
         dec_client_->get_param(dec_param_);
         
-        printf("param: logN:%lu, num_bit:%lu\n",
-               dec_param_.logN, dec_param_.num_bit);
+        STDSC_LOG_INFO("param: logN:%lu, bit_len:%lu",
+                       dec_param_.logN, dec_param_.bit_len);
     }
 
     ~Impl(void)
@@ -127,18 +144,24 @@ struct Encryptor::Impl
         dec_client_->disconnect();
     }
 
-    void compute(const uint64_t val, const size_t logN, const size_t num_bit)
+    void compute(const int64_t val, const size_t logN, const size_t bit_len)
     {
+        auto norm_val = NormalizeValue(val, dec_param_.bit_len);
+
+        STDSC_LOG_DEBUG("norm_val: %lu, logN:%lu", norm_val, logN);
+        
         size_t num_chunk = 1;
-        
         vector<uint64_t> x_chunks;
-        SplitValues(num_bit, logN, val, num_chunk, x_chunks);
+        SplitValues(bit_len, logN, norm_val, num_chunk, x_chunks);
         
-        printf("splitted values (n=%lu): ", num_chunk);
-        for (size_t i=0; i<x_chunks.size(); ++i) {
-            printf("%lu:%lu ", i, x_chunks[i]);
+        {
+            std::ostringstream oss;
+            oss << "splitted values (n=" << num_chunk << "): ";
+            for (size_t i=0; i<x_chunks.size(); ++i) {
+                oss << i << ":" << x_chunks[i] << " ";
+            }
+            STDSC_LOG_INFO(oss.str().c_str());
         }
-        printf("\n");
 
         auto& cc = context_->get();
         const usint N = cc->GetCryptoParameters()->GetElementParams()->GetCyclotomicOrder() / 2;
@@ -146,6 +169,7 @@ struct Encryptor::Impl
         std::vector<lbcrypto::Plaintext> vptxt;
         
         for (size_t i=0; i<num_chunk; ++i) {
+            STDSC_LOG_DEBUG("num_chunk:%lu, x_chunks[%lu]=%lu, N=%lu", num_chunk, i, x_chunks[i], N);
             vector<int64_t> coeffs_a(N, 0);
             MakeMonomialCoeff(x_chunks[i], N, is_neg_mononical_coef_, coeffs_a);
             auto poly_a = cc->MakeCoefPackedPlaintext(coeffs_a);
@@ -195,9 +219,9 @@ Encryptor::Encryptor(const char* dec_host, const char* dec_port,
 {
 }
 
-void Encryptor::compute(const uint64_t val, const size_t logN, const size_t num_bit)
+void Encryptor::compute(const int64_t val, const size_t logN, const size_t bit_len)
 {
-    pimpl_->compute(val, logN, num_bit);
+    pimpl_->compute(val, logN, bit_len);
 }
 
 } /* namespace prvc_enc */

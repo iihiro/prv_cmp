@@ -18,8 +18,10 @@
 #include <unistd.h>
 #include <string>
 #include <iostream>
+#include <cstdio>
 #include <stdsc/stdsc_log.hpp>
 #include <stdsc/stdsc_exception.hpp>
+#include <stdsc/stdsc_utility.hpp>
 #include <prvc_enc/prvc_enc.hpp>
 #include <prvc_enc/prvc_enc_dec_client.hpp>
 #include <share/define.hpp>
@@ -31,12 +33,20 @@ static constexpr const char* PUBKEY_FILENAME  = "pubkey.txt";
 
 struct Option
 {
-    uint64_t input_value;
+    int64_t input_value;
     bool is_neg_mononical_coef = false;
 };
 
 void init(Option& option, int argc, char* argv[])
 {
+    if(stdsc::utility::isdigit(argv[argc-1])) {
+        option.input_value = std::stol(argv[argc-1]);
+        --argc;
+    } else {
+        PRINT_USAGE();
+        exit(1);
+    }
+    
     int opt;
     opterr = 0;
     while ((opt = getopt(argc, argv, "t:h")) != -1)
@@ -51,13 +61,6 @@ void init(Option& option, int argc, char* argv[])
                 PRINT_USAGE();
                 exit(1);
         }
-    }
-
-    if (optind < argc) {
-        option.input_value = std::stol(argv[optind]);
-    } else {
-        PRINT_USAGE();
-        exit(1);
     }
 }
 
@@ -78,7 +81,7 @@ int main(int argc, char* argv[])
     {
         Option option;
         init(option, argc, argv);
-        STDSC_LOG_INFO("Launched Encryptor demo app. (input value: %lu)",
+        STDSC_LOG_INFO("Launched Encryptor demo app. (input value: %ld)",
                        option.input_value);
         exec(option);
     }
