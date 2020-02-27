@@ -40,7 +40,7 @@ Private Comparision library (prv_cmp) compare the magnitudes of 1-bit integers x
 | `demo/eval/eval` | Evaluator demo app |
 
 # API Reference
-1. Run the following command at the root of NB-Classify library to build the document.
+1. Run the following command at the root directory to build the document.
     ```sh
     $ cd doc && doxygen
     ```
@@ -77,12 +77,12 @@ The demo app consists of four processes: Decryptor, Encryptor1, Encryptor2 and E
 * Configuration
     * Specify the following PALISADE parameters in the configuration file.
         ```
-        mul_depth  = 4  (Default: 4)
-        logN       = 13 (Default: 13)
-        num_bit    = 30 (Default: 30)
-        dcrt_bits  = 60 (Default: 60)
-        rel_window = 0  (Default: 0)
-        sigma      = 32 (Default: 32)
+        mul_depth  = 4   (Default: 4)
+        logN       = 13  (Default: 13)
+        bit_len    = 30  (Default: 30)
+        dcrt_bits  = 60  (Default: 60)
+        rel_window = 0   (Default: 0)
+        sigma      = 3.2 (Default: 3.2)
         ```
 
 * State Transition Diagram
