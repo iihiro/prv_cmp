@@ -40,7 +40,7 @@ struct DecParam
     static constexpr std::size_t DefaultNumBit    = 30;
     static constexpr std::size_t DefaultDcrtBits  = 60;
     static constexpr std::size_t DefaultRelWindow = 0;
-    static constexpr double      DefaultSigma     = 32;
+    static constexpr double      DefaultSigma     = 3.2;
 };
 
 std::ostream& operator<<(std::ostream& os, const DecParam& param);

@@ -3,4 +3,4 @@ logN       = 13
 num_bit    = 30
 dcrt_bits  = 60
 rel_window = 0
-sigma      = 32
+sigma      = 3.2
