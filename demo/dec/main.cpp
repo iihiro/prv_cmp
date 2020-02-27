@@ -141,19 +141,19 @@ void read_config(const std::string& config_filename,
     prvc_share::Config conf;
     conf.load_from_file(config_filename);
     
-#define READ(key, val, vfmt) do {                                     \
+#define READ(key, val, type, vfmt) do {                               \
         if (conf.is_exist_key(#key))                                  \
-            val = prvc_share::config_get_value<long>(conf, #key);     \
+            val = prvc_share::config_get_value<type>(conf, #key);     \
         STDSC_LOG_INFO("read fhe parameter. (%s: " vfmt ")",          \
                        #key, val);                                    \
     } while(0)
     
-    READ(mul_depth,  dec_param.mul_depth,  "%lu");
-    READ(logN,       dec_param.logN,       "%lu");
-    READ(num_bit,    dec_param.num_bit,    "%lu");
-    READ(dcrt_bits,  dec_param.dcrt_bits,  "%lu");
-    READ(rel_window, dec_param.rel_window, "%lu");
-    READ(sigma,      dec_param.sigma,      "%lf");
+    READ(mul_depth,  dec_param.mul_depth,  unsigned long long, "%lu");
+    READ(logN,       dec_param.logN,       unsigned long long, "%lu");
+    READ(bit_len,    dec_param.bit_len,    unsigned long long, "%lu");
+    READ(dcrt_bits,  dec_param.dcrt_bits,  unsigned long long, "%lu");
+    READ(rel_window, dec_param.rel_window, unsigned long long, "%lu");
+    READ(sigma,      dec_param.sigma,      double,             "%lf");
 
 #undef READ
 }
