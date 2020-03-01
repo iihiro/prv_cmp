@@ -5,7 +5,7 @@ TOPDIR=${PWD}/..
 BINDIR=${TOPDIR}/build/demo
 KEYOPT=-g
 
-CONFFILE=${TOPDIR}/demo/dec/config.txt
+CONFFILE=${PWD}/config.txt
 RESFILE=${PWD}/res.txt
 
 if [ $# -ne 3 ]; then
