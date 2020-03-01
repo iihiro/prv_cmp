@@ -144,15 +144,15 @@ struct Encryptor::Impl
         dec_client_->disconnect();
     }
 
-    void compute(const int64_t val, const size_t logN, const size_t bit_len)
+    void compute(const int64_t val)
     {
         auto norm_val = NormalizeValue(val, dec_param_.bit_len);
 
-        STDSC_LOG_DEBUG("norm_val: %lu, logN:%lu", norm_val, logN);
-        
         size_t num_chunk = 1;
         vector<uint64_t> x_chunks;
-        SplitValues(bit_len, logN, norm_val, num_chunk, x_chunks);
+        SplitValues(dec_param_.bit_len, dec_param_.logN, norm_val, num_chunk, x_chunks);
+
+        std::reverse(x_chunks.begin(), x_chunks.end());
         
         {
             std::ostringstream oss;
@@ -219,9 +219,9 @@ Encryptor::Encryptor(const char* dec_host, const char* dec_port,
 {
 }
 
-void Encryptor::compute(const int64_t val, const size_t logN, const size_t bit_len)
+void Encryptor::compute(const int64_t val)
 {
-    pimpl_->compute(val, logN, bit_len);
+    pimpl_->compute(val);
 }
 
 } /* namespace prvc_enc */
