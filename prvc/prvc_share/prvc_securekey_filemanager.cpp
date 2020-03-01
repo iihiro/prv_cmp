@@ -62,6 +62,8 @@ struct SecureKeyFileManager::Impl
 
     void initialize(void)
     {
+        STDSC_LOG_INFO("Generating keys");
+        
         double root_hermit = 0.0;
         GetRootHermit(mul_depth_, logN_, rel_window_, dcrt_bits_, root_hermit);
 
@@ -90,7 +92,8 @@ struct SecureKeyFileManager::Impl
         index_list.push_back(2 * N - 1);
         eval_automorph_ks = cc->EvalAutomorphismKeyGen(kp_.secretKey, index_list);
         cc->InsertEvalAutomorphismKey(eval_automorph_ks);
-
+        ShowParam(cc);
+        
         lbcrypto::Serialized ser_ctx, ser_emk, ser_eak, ser_pub, ser_pri;
         
         std::ofstream ofs_ctx(filename(kKindContext), std::ios::binary | std::ios::trunc);
@@ -157,6 +160,16 @@ struct SecureKeyFileManager::Impl
     const lbcrypto::LPKeyPair<PolyType>& keypair(void) const
     {
         return kp_;
+    }
+
+private:
+    void ShowParam(const prvc_share::FHEContext& cc)
+    {
+        std::ostringstream oss;
+        oss << "Params: t: " << cc->GetCryptoParameters()->GetPlaintextModulus();
+        oss << ", n: "       << cc->GetCryptoParameters()->GetElementParams()->GetCyclotomicOrder() / 2;
+        oss << ", logQ: "    << log2(cc->GetCryptoParameters()->GetElementParams()->GetModulus().ConvertToDouble());
+        STDSC_LOG_INFO(oss.str().c_str());
     }
     
 private:

@@ -188,7 +188,6 @@ void exec(const Param& param)
     }
 
     if (param.is_generate_securekey) {
-        std::cout << "generating keys" << std::endl;
         skm_ptr->initialize();
     }
 
